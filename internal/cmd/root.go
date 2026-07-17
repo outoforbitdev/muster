@@ -7,8 +7,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "muster",
 	Short: "Muster: Manage multi-repo workspaces with coordinated branches",
-	Long: `Muster is a CLI tool for creating and managing workspaces that contain multiple
-cloned repositories with coordinated branch checkout and configuration.
+	Long: `Muster is a CLI tool for creating and managing workspaces that contain multiple cloned repositories with coordinated branch checkout and configuration.
 
 Use 'muster launch' to create a new workspace or open an existing one.
 Use 'muster remove' to delete a workspace.`,
