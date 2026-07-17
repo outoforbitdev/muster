@@ -20,7 +20,7 @@ func CreateWorkspace(
 	noBranch bool,
 ) error {
 	// Expand workspace path
-	workspacePath := filepath.Join(os.Getenv("HOME"), ".workspaces", workspace)
+	workspacePath := filepath.Join(os.Getenv("HOME"), ".muster", workspace)
 
 	// Create workspace directory
 	if err := os.MkdirAll(workspacePath, 0755); err != nil {

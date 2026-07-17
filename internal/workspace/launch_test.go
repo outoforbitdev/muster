@@ -16,7 +16,7 @@ func TestLaunchWorkspaceExisting(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	workspacePath := filepath.Join(tmpDir, ".workspaces", "test-ws")
+	workspacePath := filepath.Join(tmpDir, ".muster", "test-ws")
 	if err := os.MkdirAll(workspacePath, 0755); err != nil {
 		t.Fatalf("failed to create workspace dir: %v", err)
 	}
@@ -38,7 +38,7 @@ func TestLaunchWorkspaceExisting(t *testing.T) {
 		t.Fatalf("LaunchWorkspace failed: %v", err)
 	}
 
-	expectedPath := filepath.Join(tmpDir, ".workspaces", "test-ws")
+	expectedPath := filepath.Join(tmpDir, ".muster", "test-ws")
 	if path != expectedPath {
 		t.Errorf("expected path %q, got %q", expectedPath, path)
 	}

@@ -75,7 +75,7 @@ muster launch my-workspace --stack full-stack
 ```
 
 For new workspaces, this will:
-1. Create `~/.workspaces/my-workspace/`
+1. Create `~/.muster/my-workspace/`
 2. Clone all repos from the stack
 3. Checkout branches (with `{workspace}` substitution)
 4. Generate `CLAUDE.md`
@@ -158,7 +158,7 @@ muster remove my-workspace --yes
 ## Workspace Layout
 
 ```
-~/.workspaces/my-workspace/
+~/.muster/my-workspace/
 ├── CLAUDE.md              # Auto-generated workspace documentation
 ├── api/                   # Cloned repo (from URL)
 ├── web/                   # Cloned repo
