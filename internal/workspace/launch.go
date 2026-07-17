@@ -51,6 +51,7 @@ func LaunchWorkspace(
 			repos[repoName] = repoPath
 		}
 
+		fmt.Fprintf(os.Stderr, "Generating CLAUDE.md...\n")
 		claudeContent := claude.GenerateCLAUDE(workspace, stack, repos)
 		if err := claude.WriteCLAUDE(workspacePath, claudeContent); err != nil {
 			// Don't fail the entire launch if CLAUDE.md generation fails
@@ -64,8 +65,11 @@ func LaunchWorkspace(
 // LaunchClaude launches Claude Code with the specified workspace name.
 // Claude Code must be installed and available in PATH.
 func LaunchClaude(workspacePath, workspace string) error {
-	cmd := exec.Command("claude", "launch", "--name", workspace)
+	fmt.Fprintf(os.Stderr, "Launching Claude Code...\n")
+	cmd := exec.Command("claude", "--name", workspace)
 	cmd.Dir = workspacePath
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to launch Claude Code: %w", err)
 	}

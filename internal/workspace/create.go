@@ -23,6 +23,7 @@ func CreateWorkspace(
 	workspacePath := filepath.Join(os.Getenv("HOME"), ".muster", workspace)
 
 	// Create workspace directory
+	fmt.Fprintf(os.Stderr, "Creating workspace at %s...\n", workspacePath)
 	if err := os.MkdirAll(workspacePath, 0755); err != nil {
 		return fmt.Errorf("failed to create workspace directory: %w", err)
 	}
@@ -68,6 +69,7 @@ func CreateWorkspace(
 		repoPath := getRepoPath(workspacePath, &rtc)
 
 		// Clone the repo
+		fmt.Fprintf(os.Stderr, "Cloning %s...\n", rtc.URL)
 		if err := cloneRepo(rtc.URL, repoPath); err != nil {
 			return fmt.Errorf("failed to clone repo %d (%s): %w", i, rtc.URL, err)
 		}
@@ -77,6 +79,7 @@ func CreateWorkspace(
 			targetBranch := determineBranch(branch, rtc.TemplateBranchSyntax, cfg.Defaults.TemplateBranchSyntax)
 			if targetBranch != "" {
 				substitutedBranch := SubstituteTemplate(targetBranch, workspace)
+				fmt.Fprintf(os.Stderr, "Creating branch %q...\n", substitutedBranch)
 				if err := checkoutBranchInRepo(repoPath, substitutedBranch); err != nil {
 					return fmt.Errorf("failed to checkout branch %q in repo %d (%s): %w", substitutedBranch, i, rtc.URL, err)
 				}

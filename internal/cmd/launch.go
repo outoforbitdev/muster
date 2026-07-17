@@ -33,6 +33,11 @@ If the workspace doesn't exist, this will:
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		workspaceName := args[0]
+		workspacePath := filepath.Join(os.Getenv("HOME"), ".muster", workspaceName)
+
+		// Check if workspace already exists
+		_, err := os.Stat(workspacePath)
+		isNew := os.IsNotExist(err)
 
 		// Load config
 		cfg, err := config.Load()
@@ -41,7 +46,7 @@ If the workspace doesn't exist, this will:
 		}
 
 		// Launch or create workspace
-		workspacePath, err := workspace.LaunchWorkspace(
+		workspacePath, err = workspace.LaunchWorkspace(
 			cfg,
 			workspaceName,
 			launchStacks,
@@ -53,11 +58,10 @@ If the workspace doesn't exist, this will:
 			return fmt.Errorf("failed to launch workspace: %w", err)
 		}
 
-		// Check if workspace is new or existing
-		claudePath := filepath.Join(workspacePath, "CLAUDE.md")
-		isNew := true
-		if _, err := os.Stat(claudePath); err == nil {
-			isNew = false
+		if isNew {
+			fmt.Fprintf(os.Stderr, "\n✓ Workspace created successfully!\n")
+		} else {
+			fmt.Fprintf(os.Stderr, "\n✓ Opening existing workspace...\n")
 		}
 
 		// Launch Claude Code
