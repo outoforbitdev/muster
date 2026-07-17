@@ -1,13 +1,20 @@
 package cmd
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/spf13/cobra"
+
+	"github.com/outoforbitdev/muster/internal/config"
+	"github.com/outoforbitdev/muster/internal/workspace"
 )
 
 var (
-	launchStacks []string
-	launchRepos  []string
-	launchBranch string
+	launchStacks   []string
+	launchRepos    []string
+	launchBranch   string
 	launchNoBranch bool
 )
 
@@ -25,9 +32,43 @@ If the workspace doesn't exist, this will:
   5. Launch Claude Code with the workspace`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		workspace := args[0]
-		// TODO: Implement workspace launch logic
-		cmd.Printf("Launching workspace: %s\n", workspace)
+		workspaceName := args[0]
+
+		// Load config
+		cfg, err := config.Load()
+		if err != nil {
+			return fmt.Errorf("failed to load config: %w", err)
+		}
+
+		// Launch or create workspace
+		workspacePath, err := workspace.LaunchWorkspace(
+			cfg,
+			workspaceName,
+			launchStacks,
+			launchRepos,
+			launchBranch,
+			launchNoBranch,
+		)
+		if err != nil {
+			return fmt.Errorf("failed to launch workspace: %w", err)
+		}
+
+		// Check if workspace is new or existing
+		claudePath := filepath.Join(workspacePath, "CLAUDE.md")
+		isNew := true
+		if _, err := os.Stat(claudePath); err == nil {
+			isNew = false
+		}
+
+		// Launch Claude Code
+		if err := workspace.LaunchClaude(workspacePath, workspaceName); err != nil {
+			// Don't fail if Claude is not installed, just print the path
+			fmt.Printf("Workspace ready at: %s\n", workspacePath)
+			if isNew {
+				fmt.Printf("Note: Claude Code not found. You can manually open the workspace at: %s\n", workspacePath)
+			}
+		}
+
 		return nil
 	},
 }
@@ -41,7 +82,7 @@ func init() {
 	// Validate mutually exclusive flags in PreRunE
 	launchCmd.PreRunE = func(cmd *cobra.Command, args []string) error {
 		if launchBranch != "" && launchNoBranch {
-			return cmd.Usage()
+			return fmt.Errorf("--branch and --no-branch are mutually exclusive")
 		}
 		return nil
 	}
