@@ -150,9 +150,10 @@ func cloneRepo(url, path string) error {
 	return nil
 }
 
-// checkoutBranchInRepo checks out a branch in an existing repository.
+// checkoutBranchInRepo checks out or creates a branch in an existing repository.
+// Uses -b to create the branch if it doesn't exist.
 func checkoutBranchInRepo(repoPath, branch string) error {
-	cmd := exec.Command("git", "-C", repoPath, "checkout", branch)
+	cmd := exec.Command("git", "-C", repoPath, "checkout", "-b", branch)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("git checkout failed: %w", err)
 	}
