@@ -40,7 +40,7 @@ func LaunchWorkspace(
 	if len(stackNames) > 0 {
 		stackName := stackNames[0]
 		stack := cfg.GetStack(stackName)
-		repos := make(map[string]string)
+		repoInfos := make([]claude.RepoInfo, 0)
 		for _, repo := range stack.Repos {
 			rtc := RepoToClone{
 				URL:       repo.URL,
@@ -48,11 +48,15 @@ func LaunchWorkspace(
 			}
 			repoPath := getRepoPath(workspacePath, &rtc)
 			repoName := filepath.Base(repoPath)
-			repos[repoName] = repoPath
+			repoInfos = append(repoInfos, claude.RepoInfo{
+				Name:        repoName,
+				Path:        repoPath,
+				Description: repo.Description,
+			})
 		}
 
 		fmt.Fprintf(os.Stderr, "Generating CLAUDE.md...\n")
-		claudeContent := claude.GenerateCLAUDE(workspace, stack, repos)
+		claudeContent := claude.GenerateCLAUDE(workspace, stack, repoInfos)
 		if err := claude.WriteCLAUDE(workspacePath, claudeContent); err != nil {
 			// Don't fail the entire launch if CLAUDE.md generation fails
 			fmt.Fprintf(os.Stderr, "warning: failed to generate CLAUDE.md: %v\n", err)

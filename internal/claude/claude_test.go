@@ -14,9 +14,9 @@ func TestGenerateCLAUDE(t *testing.T) {
 		stack := &config.Stack{
 			Description: "My test stack with api and web",
 		}
-		repos := map[string]string{
-			"api": "~/.workspaces/my-ws/api",
-			"web": "~/.workspaces/my-ws/web",
+		repos := []RepoInfo{
+			{Name: "api", Path: "~/.muster/my-ws/api", Description: "Backend API service"},
+			{Name: "web", Path: "~/.muster/my-ws/web", Description: "Frontend web app"},
 		}
 
 		content := GenerateCLAUDE("my-ws", stack, repos)
@@ -36,14 +36,20 @@ func TestGenerateCLAUDE(t *testing.T) {
 		if !strings.Contains(content, "**web**") {
 			t.Error("missing web repo")
 		}
+		if !strings.Contains(content, "Backend API service") {
+			t.Error("missing api description")
+		}
+		if !strings.Contains(content, "Frontend web app") {
+			t.Error("missing web description")
+		}
 	})
 
-	t.Run("without stack description", func(t *testing.T) {
+	t.Run("without descriptions", func(t *testing.T) {
 		stack := &config.Stack{
 			Description: "",
 		}
-		repos := map[string]string{
-			"api": "~/.workspaces/my-ws/api",
+		repos := []RepoInfo{
+			{Name: "api", Path: "~/.muster/my-ws/api", Description: ""},
 		}
 
 		content := GenerateCLAUDE("my-ws", stack, repos)
@@ -54,11 +60,14 @@ func TestGenerateCLAUDE(t *testing.T) {
 		if !strings.Contains(content, "## Repos") {
 			t.Error("missing repos section")
 		}
+		if !strings.Contains(content, "**api**") {
+			t.Error("missing api repo")
+		}
 	})
 
 	t.Run("nil stack", func(t *testing.T) {
-		repos := map[string]string{
-			"api": "~/.workspaces/my-ws/api",
+		repos := []RepoInfo{
+			{Name: "api", Path: "~/.muster/my-ws/api", Description: "Backend API"},
 		}
 
 		content := GenerateCLAUDE("my-ws", nil, repos)

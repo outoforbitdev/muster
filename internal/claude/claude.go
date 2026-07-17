@@ -9,9 +9,16 @@ import (
 	"github.com/outoforbitdev/muster/internal/config"
 )
 
+// RepoInfo holds info about a cloned repo for CLAUDE.md generation.
+type RepoInfo struct {
+	Name        string
+	Path        string
+	Description string
+}
+
 // GenerateCLAUDE generates the content of a CLAUDE.md file for a workspace.
-// repos maps repo names to their paths relative to the workspace root.
-func GenerateCLAUDE(workspace string, stack *config.Stack, repos map[string]string) string {
+// repos is a slice of RepoInfo with paths and descriptions.
+func GenerateCLAUDE(workspace string, stack *config.Stack, repos []RepoInfo) string {
 	var sb strings.Builder
 
 	sb.WriteString(fmt.Sprintf("# Workspace: %s\n\n", workspace))
@@ -22,8 +29,12 @@ func GenerateCLAUDE(workspace string, stack *config.Stack, repos map[string]stri
 	}
 
 	sb.WriteString("## Repos\n\n")
-	for repoName, repoPath := range repos {
-		sb.WriteString(fmt.Sprintf("- **%s**: `%s`\n", repoName, repoPath))
+	for _, repo := range repos {
+		sb.WriteString(fmt.Sprintf("- **%s**: `%s`", repo.Name, repo.Path))
+		if repo.Description != "" {
+			sb.WriteString(fmt.Sprintf(" — %s", repo.Description))
+		}
+		sb.WriteString("\n")
 	}
 
 	return sb.String()
