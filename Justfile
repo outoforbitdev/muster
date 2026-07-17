@@ -37,3 +37,8 @@ verify: build test
 install: build
     cp bin/muster /usr/local/bin/muster
     @echo "✅ Installed muster to /usr/local/bin/muster"
+
+# Uninstall from PATH
+uninstall:
+    rm -f /usr/local/bin/muster
+    @echo "✅ Uninstalled muster from /usr/local/bin/muster"
