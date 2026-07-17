@@ -1,0 +1,45 @@
+{
+  "stacks": {
+    "full-stack": {
+      "repos": [
+        {
+          "url": "https://github.com/yourorg/api",
+          "templateBranchSyntax": "main",
+          "description": "Backend API service"
+        },
+        {
+          "url": "https://github.com/yourorg/web",
+          "templateBranchSyntax": "main",
+          "description": "Next.js frontend"
+        },
+        {
+          "url": "https://github.com/yourorg/shared-types",
+          "templateBranchSyntax": "feature-{workspace}",
+          "description": "Shared TypeScript types",
+          "directory": "types"
+        }
+      ],
+      "description": "api is the backend service. web is the Next.js frontend consuming api. shared-types holds TS types shared between both."
+    },
+    "backend-only": {
+      "repos": [
+        {
+          "url": "https://github.com/yourorg/api",
+          "templateBranchSyntax": "feature-{workspace}",
+          "description": "Backend API service"
+        },
+        {
+          "url": "https://github.com/yourorg/shared-types",
+          "templateBranchSyntax": "feature-{workspace}",
+          "description": "Shared TypeScript types",
+          "directory": "types"
+        }
+      ],
+      "description": "Backend-focused stack with api and shared-types. Use for backend-only work."
+    }
+  },
+  "defaults": {
+    "checkoutBranchOnLaunch": true,
+    "templateBranchSyntax": "feature-{workspace}"
+  }
+}
