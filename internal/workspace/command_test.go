@@ -1,6 +1,8 @@
 package workspace
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/outoforbitdev/muster/internal/config"
@@ -73,4 +75,50 @@ func TestShouldLaunchEditor(t *testing.T) {
 
 func boolPtr(b bool) *bool {
 	return &b
+}
+
+func TestLaunchAgent(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "muster-test-*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	testFile := filepath.Join(tmpDir, "test.txt")
+	cfg := &config.Config{
+		Defaults: config.Defaults{
+			AgentCommand: "touch " + testFile,
+		},
+	}
+
+	if err := LaunchAgent(cfg, "test-ws", tmpDir); err != nil {
+		t.Errorf("LaunchAgent failed: %v", err)
+	}
+
+	if _, err := os.Stat(testFile); err != nil {
+		t.Errorf("expected test file to be created, got error: %v", err)
+	}
+}
+
+func TestLaunchAgentWithSubstitution(t *testing.T) {
+	tmpDir, err := os.MkdirTemp("", "muster-test-*")
+	if err != nil {
+		t.Fatalf("failed to create temp dir: %v", err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	testFile := filepath.Join(tmpDir, "my-ws-test.txt")
+	cfg := &config.Config{
+		Defaults: config.Defaults{
+			AgentCommand: "touch " + tmpDir + "/{workspace}-test.txt",
+		},
+	}
+
+	if err := LaunchAgent(cfg, "my-ws", tmpDir); err != nil {
+		t.Errorf("LaunchAgent failed: %v", err)
+	}
+
+	if _, err := os.Stat(testFile); err != nil {
+		t.Errorf("expected test file to be created with workspace substitution, got error: %v", err)
+	}
 }

@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	DefaultAgentCommand  = "claude {workspaceDirectory}"
+	DefaultAgentCommand  = "claude --name {workspace}"
 	DefaultEditorCommand = "code {workspaceDirectory}"
 )
 
@@ -147,7 +147,9 @@ func (c *Config) GetEditorCommand() string {
 	return DefaultEditorCommand
 }
 
-// SubstituteWorkspaceDirectory replaces {workspaceDirectory} in a command template.
-func SubstituteWorkspaceDirectory(command, workspacePath string) string {
-	return strings.ReplaceAll(command, "{workspaceDirectory}", workspacePath)
+// SubstituteCommandTemplate replaces {workspace} and {workspaceDirectory} in a command template.
+func SubstituteCommandTemplate(command, workspaceName, workspacePath string) string {
+	command = strings.ReplaceAll(command, "{workspace}", workspaceName)
+	command = strings.ReplaceAll(command, "{workspaceDirectory}", workspacePath)
+	return command
 }

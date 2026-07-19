@@ -34,8 +34,8 @@ func ShouldLaunchEditor(cfg *config.Config, editorFlag, noEditorFlag bool) bool 
 
 // runCommand substitutes the template and executes it via the shell so
 // user-configured commands can include arguments/flags naturally.
-func runCommand(commandTemplate, workspacePath string) error {
-	command := config.SubstituteWorkspaceDirectory(commandTemplate, workspacePath)
+func runCommand(commandTemplate, workspaceName, workspacePath string) error {
+	command := config.SubstituteCommandTemplate(commandTemplate, workspaceName, workspacePath)
 	cmd := exec.Command("sh", "-c", command)
 	cmd.Dir = workspacePath
 	cmd.Stdin = os.Stdin
@@ -48,11 +48,11 @@ func runCommand(commandTemplate, workspacePath string) error {
 }
 
 // LaunchAgent runs the configured agentCommand for the workspace.
-func LaunchAgent(cfg *config.Config, workspacePath string) error {
-	return runCommand(cfg.GetAgentCommand(), workspacePath)
+func LaunchAgent(cfg *config.Config, workspaceName, workspacePath string) error {
+	return runCommand(cfg.GetAgentCommand(), workspaceName, workspacePath)
 }
 
 // LaunchEditor runs the configured editorCommand for the workspace.
-func LaunchEditor(cfg *config.Config, workspacePath string) error {
-	return runCommand(cfg.GetEditorCommand(), workspacePath)
+func LaunchEditor(cfg *config.Config, workspaceName, workspacePath string) error {
+	return runCommand(cfg.GetEditorCommand(), workspaceName, workspacePath)
 }

@@ -144,11 +144,11 @@ func TestGetAgentCommand(t *testing.T) {
 	t.Run("configured agent command", func(t *testing.T) {
 		cfg := &Config{
 			Defaults: Defaults{
-				AgentCommand: "custom-agent {workspaceDirectory}",
+				AgentCommand: "custom-agent {workspace}",
 			},
 		}
-		if got := cfg.GetAgentCommand(); got != "custom-agent {workspaceDirectory}" {
-			t.Errorf("expected %q, got %q", "custom-agent {workspaceDirectory}", got)
+		if got := cfg.GetAgentCommand(); got != "custom-agent {workspace}" {
+			t.Errorf("expected %q, got %q", "custom-agent {workspace}", got)
 		}
 	})
 }
@@ -177,21 +177,23 @@ func TestGetEditorCommand(t *testing.T) {
 	})
 }
 
-func TestSubstituteWorkspaceDirectory(t *testing.T) {
+func TestSubstituteCommandTemplate(t *testing.T) {
 	tests := []struct {
-		command  string
-		path     string
-		expected string
+		command          string
+		workspaceName    string
+		workspacePath    string
+		expected         string
 	}{
-		{"claude {workspaceDirectory}", "/home/user/.muster/ws", "claude /home/user/.muster/ws"},
-		{"code {workspaceDirectory}", "/tmp/test", "code /tmp/test"},
-		{"echo {workspaceDirectory} {workspaceDirectory}", "/path", "echo /path /path"},
-		{"no substitution", "/path", "no substitution"},
+		{"claude --name {workspace}", "my-ws", "/home/user/.muster/my-ws", "claude --name my-ws"},
+		{"code {workspaceDirectory}", "my-ws", "/tmp/test", "code /tmp/test"},
+		{"echo {workspace} {workspaceDirectory}", "my-ws", "/path", "echo my-ws /path"},
+		{"no substitution", "my-ws", "/path", "no substitution"},
+		{"{workspace}-{workspaceDirectory}", "test", "/home/test", "test-/home/test"},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.command, func(t *testing.T) {
-			if got := SubstituteWorkspaceDirectory(tt.command, tt.path); got != tt.expected {
+			if got := SubstituteCommandTemplate(tt.command, tt.workspaceName, tt.workspacePath); got != tt.expected {
 				t.Errorf("expected %q, got %q", tt.expected, got)
 			}
 		})

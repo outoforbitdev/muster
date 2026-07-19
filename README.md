@@ -172,10 +172,14 @@ muster remove my-workspace --yes
 - **defaults**: Global settings
   - `checkoutBranchOnLaunch` (boolean, default `true`): Enable automatic branch checkout
   - `templateBranchSyntax` (string): Default branch template (e.g., `"feature-{workspace}"`)
-  - `agentCommand` (string, default `"claude {workspaceDirectory}"`): Command to launch agent
+  - `agentCommand` (string, default `"claude --name {workspace}"`): Command to launch agent
   - `editorCommand` (string, default `"code {workspaceDirectory}"`): Command to launch editor
   - `launchAgent` (boolean, default `true`): Launch agent by default when no flags are set
   - `launchEditor` (boolean, default `false`): Launch editor by default when no flags are set
+
+**Template Variables:**
+- `{workspace}` — The workspace name (e.g., `"my-workspace"`)
+- `{workspaceDirectory}` — The full path to the workspace (e.g., `/home/user/.muster/my-workspace`)
 
 ### Branch Checkout Precedence
 
@@ -199,7 +203,15 @@ muster remove my-workspace --yes
 3. `defaults.launchEditor` config (default `false`) → launch if true
 4. If not launched, no editor command is run
 
-Commands support `{workspaceDirectory}` template substitution, which is replaced with the full path to the workspace directory. For example, `claude {workspaceDirectory}` becomes `claude /home/user/.muster/my-workspace`.
+**Command Template Variables:**
+
+Commands support two template variables:
+- `{workspace}` — Replaced with the workspace name (e.g., `my-workspace`)
+- `{workspaceDirectory}` — Replaced with the full workspace path (e.g., `/home/user/.muster/my-workspace`)
+
+Examples:
+- `claude --name {workspace}` → `claude --name my-workspace`
+- `code {workspaceDirectory}` → `code /home/user/.muster/my-workspace`
 
 ## Workspace Layout
 

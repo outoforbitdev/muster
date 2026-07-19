@@ -71,13 +71,13 @@ If the workspace doesn't exist, this will:
 		fmt.Printf("Workspace ready at: %s\n", workspacePath)
 
 		if workspace.ShouldLaunchEditor(cfg, launchEditor, launchNoEditor) {
-			if err := workspace.LaunchEditor(cfg, workspacePath); err != nil {
+			if err := workspace.LaunchEditor(cfg, workspaceName, workspacePath); err != nil {
 				fmt.Fprintf(os.Stderr, "warning: failed to launch editor command: %v\n", err)
 			}
 		}
 
 		if workspace.ShouldLaunchAgent(cfg, launchAgent, launchNoAgent) {
-			if err := workspace.LaunchAgent(cfg, workspacePath); err != nil {
+			if err := workspace.LaunchAgent(cfg, workspaceName, workspacePath); err != nil {
 				fmt.Fprintf(os.Stderr, "warning: failed to launch agent command: %v\n", err)
 			}
 		}

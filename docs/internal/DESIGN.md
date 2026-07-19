@@ -87,7 +87,7 @@ muster remove <workspace> [-y|--yes]
   "defaults": {
     "checkoutBranchOnLaunch": true,
     "templateBranchSyntax": "{workspace}",
-    "agentCommand": "claude {workspaceDirectory}",
+    "agentCommand": "claude --name {workspace}",
     "editorCommand": "code {workspaceDirectory}",
     "launchAgent": true,
     "launchEditor": false
@@ -108,8 +108,8 @@ muster remove <workspace> [-y|--yes]
 - **defaults**: Global defaults:
   - `checkoutBranchOnLaunch`: Boolean flag (default `true`) to enable automatic branch checkout on launch.
   - `templateBranchSyntax`: Template syntax for branch names, e.g., `{workspace}` or `feature-{workspace}`.
-  - `agentCommand`: *(optional)* Command template to launch agent (default `"claude {workspaceDirectory}"`). Supports `{workspaceDirectory}` substitution.
-  - `editorCommand`: *(optional)* Command template to launch editor (default `"code {workspaceDirectory}"`). Supports `{workspaceDirectory}` substitution.
+  - `agentCommand`: *(optional)* Command template to launch agent (default `"claude --name {workspace}"`). Supports `{workspace}` and `{workspaceDirectory}` substitution.
+  - `editorCommand`: *(optional)* Command template to launch editor (default `"code {workspaceDirectory}"`). Supports `{workspace}` and `{workspaceDirectory}` substitution.
   - `launchAgent`: *(optional)* Boolean flag (default `true`) to launch agent by default when no CLI flags are set.
   - `launchEditor`: *(optional)* Boolean flag (default `false`) to launch editor by default when no CLI flags are set.
 
@@ -185,9 +185,12 @@ muster/
 
 ### Launching Agent and Editor
 - After workspace creation/opening, optionally launch the configured agent and editor commands.
-- Commands are executed via the shell (`sh -c`) with `{workspaceDirectory}` substitution.
+- Editor launches before agent (to avoid agent blocking editor launch).
+- Commands are executed via the shell (`sh -c`) with template substitution:
+  - `{workspace}` → workspace name (e.g., `my-workspace`)
+  - `{workspaceDirectory}` → full workspace path (e.g., `/home/user/.muster/my-workspace`)
 - Both agent and editor are optional; either can be disabled via config or CLI flags.
-- By default, agent launches (via `claude {workspaceDirectory}`), editor does not launch.
+- By default, agent launches (via `claude --name {workspace}`), editor does not launch.
 - Launch behavior is controlled by CLI flags with precedence over config defaults.
 
 ---
