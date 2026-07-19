@@ -6,6 +6,12 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
+)
+
+const (
+	DefaultAgentCommand  = "claude {workspaceDirectory}"
+	DefaultEditorCommand = "code {workspaceDirectory}"
 )
 
 type Repo struct {
@@ -23,6 +29,10 @@ type Stack struct {
 type Defaults struct {
 	CheckoutBranchOnLaunch bool   `json:"checkoutBranchOnLaunch"`
 	TemplateBranchSyntax   string `json:"templateBranchSyntax,omitempty"`
+	AgentCommand           string `json:"agentCommand,omitempty"`
+	EditorCommand          string `json:"editorCommand,omitempty"`
+	LaunchAgent            *bool  `json:"launchAgent,omitempty"`
+	LaunchEditor           bool   `json:"launchEditor,omitempty"`
 }
 
 type Config struct {
@@ -119,4 +129,25 @@ func (c *Config) GetStack(name string) *Stack {
 		return nil
 	}
 	return &stack
+}
+
+// GetAgentCommand returns the agent command, using the configured value or the default.
+func (c *Config) GetAgentCommand() string {
+	if c.Defaults.AgentCommand != "" {
+		return c.Defaults.AgentCommand
+	}
+	return DefaultAgentCommand
+}
+
+// GetEditorCommand returns the editor command, using the configured value or the default.
+func (c *Config) GetEditorCommand() string {
+	if c.Defaults.EditorCommand != "" {
+		return c.Defaults.EditorCommand
+	}
+	return DefaultEditorCommand
+}
+
+// SubstituteWorkspaceDirectory replaces {workspaceDirectory} in a command template.
+func SubstituteWorkspaceDirectory(command, workspacePath string) string {
+	return strings.ReplaceAll(command, "{workspaceDirectory}", workspacePath)
 }

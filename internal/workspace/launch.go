@@ -3,7 +3,6 @@ package workspace
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	"github.com/outoforbitdev/muster/internal/claude"
@@ -64,18 +63,4 @@ func LaunchWorkspace(
 	}
 
 	return workspacePath, nil
-}
-
-// LaunchClaude launches Claude Code with the specified workspace name.
-// Claude Code must be installed and available in PATH.
-func LaunchClaude(workspacePath, workspace string) error {
-	fmt.Fprintf(os.Stderr, "Launching Claude Code...\n")
-	cmd := exec.Command("claude", "--name", workspace)
-	cmd.Dir = workspacePath
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to launch Claude Code: %w", err)
-	}
-	return nil
 }

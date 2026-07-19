@@ -102,6 +102,32 @@ Skip automatic branch checkout:
 muster launch my-workspace --stack full-stack --no-branch
 ```
 
+### Launch Without Agent
+
+Skip launching the agent (Claude Code by default):
+
+```bash
+muster launch my-workspace --stack full-stack --no-agent
+```
+
+### Launch With Editor
+
+Launch the editor in addition to the agent:
+
+```bash
+muster launch my-workspace --stack full-stack --editor
+```
+
+### Launch With Custom Agent/Editor
+
+Configure custom commands in your config file, then:
+
+```bash
+muster launch my-workspace --stack full-stack --agent --editor
+```
+
+Both `--agent` and `--editor` can be used together, and both respect your configured commands and defaults.
+
 ### Add Individual Repos
 
 Mix stack repos with explicit URLs:
@@ -146,6 +172,10 @@ muster remove my-workspace --yes
 - **defaults**: Global settings
   - `checkoutBranchOnLaunch` (boolean, default `true`): Enable automatic branch checkout
   - `templateBranchSyntax` (string): Default branch template (e.g., `"feature-{workspace}"`)
+  - `agentCommand` (string, default `"claude {workspaceDirectory}"`): Command to launch agent
+  - `editorCommand` (string, default `"code {workspaceDirectory}"`): Command to launch editor
+  - `launchAgent` (boolean, default `true`): Launch agent by default when no flags are set
+  - `launchEditor` (boolean, default `false`): Launch editor by default when no flags are set
 
 ### Branch Checkout Precedence
 
@@ -154,6 +184,22 @@ muster remove my-workspace --yes
 3. Per-repo `templateBranchSyntax` in config
 4. Global `defaults.templateBranchSyntax` in config
 5. Git default branch (after clone)
+
+### Agent and Editor Launch Precedence
+
+**Agent Launch:**
+1. CLI `--no-agent` flag → do not launch
+2. CLI `--agent` flag → launch
+3. `defaults.launchAgent` config (default `true`) → launch if true
+4. If not launched, no agent command is run
+
+**Editor Launch:**
+1. CLI `--no-editor` flag → do not launch
+2. CLI `--editor` flag → launch
+3. `defaults.launchEditor` config (default `false`) → launch if true
+4. If not launched, no editor command is run
+
+Commands support `{workspaceDirectory}` template substitution, which is replaced with the full path to the workspace directory. For example, `claude {workspaceDirectory}` becomes `claude /home/user/.muster/my-workspace`.
 
 ## Workspace Layout
 

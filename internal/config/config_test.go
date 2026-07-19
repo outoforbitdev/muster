@@ -128,3 +128,72 @@ func TestGetStack(t *testing.T) {
 		}
 	})
 }
+
+func TestGetAgentCommand(t *testing.T) {
+	t.Run("default agent command", func(t *testing.T) {
+		cfg := &Config{
+			Defaults: Defaults{
+				AgentCommand: "",
+			},
+		}
+		if got := cfg.GetAgentCommand(); got != DefaultAgentCommand {
+			t.Errorf("expected %q, got %q", DefaultAgentCommand, got)
+		}
+	})
+
+	t.Run("configured agent command", func(t *testing.T) {
+		cfg := &Config{
+			Defaults: Defaults{
+				AgentCommand: "custom-agent {workspaceDirectory}",
+			},
+		}
+		if got := cfg.GetAgentCommand(); got != "custom-agent {workspaceDirectory}" {
+			t.Errorf("expected %q, got %q", "custom-agent {workspaceDirectory}", got)
+		}
+	})
+}
+
+func TestGetEditorCommand(t *testing.T) {
+	t.Run("default editor command", func(t *testing.T) {
+		cfg := &Config{
+			Defaults: Defaults{
+				EditorCommand: "",
+			},
+		}
+		if got := cfg.GetEditorCommand(); got != DefaultEditorCommand {
+			t.Errorf("expected %q, got %q", DefaultEditorCommand, got)
+		}
+	})
+
+	t.Run("configured editor command", func(t *testing.T) {
+		cfg := &Config{
+			Defaults: Defaults{
+				EditorCommand: "vim {workspaceDirectory}",
+			},
+		}
+		if got := cfg.GetEditorCommand(); got != "vim {workspaceDirectory}" {
+			t.Errorf("expected %q, got %q", "vim {workspaceDirectory}", got)
+		}
+	})
+}
+
+func TestSubstituteWorkspaceDirectory(t *testing.T) {
+	tests := []struct {
+		command  string
+		path     string
+		expected string
+	}{
+		{"claude {workspaceDirectory}", "/home/user/.muster/ws", "claude /home/user/.muster/ws"},
+		{"code {workspaceDirectory}", "/tmp/test", "code /tmp/test"},
+		{"echo {workspaceDirectory} {workspaceDirectory}", "/path", "echo /path /path"},
+		{"no substitution", "/path", "no substitution"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.command, func(t *testing.T) {
+			if got := SubstituteWorkspaceDirectory(tt.command, tt.path); got != tt.expected {
+				t.Errorf("expected %q, got %q", tt.expected, got)
+			}
+		})
+	}
+}
