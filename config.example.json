@@ -40,6 +40,10 @@
   },
   "defaults": {
     "checkoutBranchOnLaunch": true,
-    "templateBranchSyntax": "feature-{workspace}"
+    "templateBranchSyntax": "feature-{workspace}",
+    "agentCommand": "claude --name {workspace}",
+    "editorCommand": "code {workspaceDirectory}",
+    "launchAgent": true,
+    "launchEditor": false
   }
 }

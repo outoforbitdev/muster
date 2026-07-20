@@ -49,11 +49,11 @@ func TestGetRepoPath(t *testing.T) {
 
 func TestShouldCheckoutBranch(t *testing.T) {
 	tests := []struct {
-		name                       string
-		checkoutBranchOnLaunch     bool
-		cliBranch                  string
-		noBranch                   bool
-		expected                   bool
+		name                   string
+		checkoutBranchOnLaunch bool
+		cliBranch              string
+		noBranch               bool
+		expected               bool
 	}{
 		{"no-branch flag takes precedence", true, "main", true, false},
 		{"cli branch takes precedence", true, "feature", false, true},
@@ -78,11 +78,11 @@ func TestShouldCheckoutBranch(t *testing.T) {
 
 func TestDetermineBranch(t *testing.T) {
 	tests := []struct {
-		name         string
-		cliBranch    string
-		repoTemplate string
+		name           string
+		cliBranch      string
+		repoTemplate   string
 		globalTemplate string
-		expected     string
+		expected       string
 	}{
 		{"cli branch takes precedence", "cli-branch", "repo-template", "global-template", "cli-branch"},
 		{"repo template if no cli", "", "repo-template", "global-template", "repo-template"},

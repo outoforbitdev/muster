@@ -128,3 +128,74 @@ func TestGetStack(t *testing.T) {
 		}
 	})
 }
+
+func TestGetAgentCommand(t *testing.T) {
+	t.Run("default agent command", func(t *testing.T) {
+		cfg := &Config{
+			Defaults: Defaults{
+				AgentCommand: "",
+			},
+		}
+		if got := cfg.GetAgentCommand(); got != DefaultAgentCommand {
+			t.Errorf("expected %q, got %q", DefaultAgentCommand, got)
+		}
+	})
+
+	t.Run("configured agent command", func(t *testing.T) {
+		cfg := &Config{
+			Defaults: Defaults{
+				AgentCommand: "custom-agent {workspace}",
+			},
+		}
+		if got := cfg.GetAgentCommand(); got != "custom-agent {workspace}" {
+			t.Errorf("expected %q, got %q", "custom-agent {workspace}", got)
+		}
+	})
+}
+
+func TestGetEditorCommand(t *testing.T) {
+	t.Run("default editor command", func(t *testing.T) {
+		cfg := &Config{
+			Defaults: Defaults{
+				EditorCommand: "",
+			},
+		}
+		if got := cfg.GetEditorCommand(); got != DefaultEditorCommand {
+			t.Errorf("expected %q, got %q", DefaultEditorCommand, got)
+		}
+	})
+
+	t.Run("configured editor command", func(t *testing.T) {
+		cfg := &Config{
+			Defaults: Defaults{
+				EditorCommand: "vim {workspaceDirectory}",
+			},
+		}
+		if got := cfg.GetEditorCommand(); got != "vim {workspaceDirectory}" {
+			t.Errorf("expected %q, got %q", "vim {workspaceDirectory}", got)
+		}
+	})
+}
+
+func TestSubstituteCommandTemplate(t *testing.T) {
+	tests := []struct {
+		command          string
+		workspaceName    string
+		workspacePath    string
+		expected         string
+	}{
+		{"claude --name {workspace}", "my-ws", "/home/user/.muster/my-ws", "claude --name my-ws"},
+		{"code {workspaceDirectory}", "my-ws", "/tmp/test", "code /tmp/test"},
+		{"echo {workspace} {workspaceDirectory}", "my-ws", "/path", "echo my-ws /path"},
+		{"no substitution", "my-ws", "/path", "no substitution"},
+		{"{workspace}-{workspaceDirectory}", "test", "/home/test", "test-/home/test"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.command, func(t *testing.T) {
+			if got := SubstituteCommandTemplate(tt.command, tt.workspaceName, tt.workspacePath); got != tt.expected {
+				t.Errorf("expected %q, got %q", tt.expected, got)
+			}
+		})
+	}
+}
