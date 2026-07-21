@@ -87,7 +87,7 @@ func TestWriteCLAUDE(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	content := "# Test Content\n\nSome test content"
 	if err := WriteCLAUDE(tmpDir, content); err != nil {

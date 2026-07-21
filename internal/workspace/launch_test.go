@@ -14,7 +14,7 @@ func TestLaunchWorkspaceExisting(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	workspacePath := filepath.Join(tmpDir, ".muster", "test-ws")
 	if err := os.MkdirAll(workspacePath, 0755); err != nil {
@@ -23,8 +23,8 @@ func TestLaunchWorkspaceExisting(t *testing.T) {
 
 	// Mock HOME to use our temp directory
 	oldHome := os.Getenv("HOME")
-	os.Setenv("HOME", tmpDir)
-	defer os.Setenv("HOME", oldHome)
+	_ = os.Setenv("HOME", tmpDir)
+	defer func() { _ = os.Setenv("HOME", oldHome) }()
 
 	cfg := &config.Config{
 		Stacks: make(map[string]config.Stack),
@@ -50,12 +50,12 @@ func TestLaunchWorkspaceNonExistent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	// Mock HOME to use our temp directory
 	oldHome := os.Getenv("HOME")
-	os.Setenv("HOME", tmpDir)
-	defer os.Setenv("HOME", oldHome)
+	_ = os.Setenv("HOME", tmpDir)
+	defer func() { _ = os.Setenv("HOME", oldHome) }()
 
 	cfg := &config.Config{
 		Stacks: make(map[string]config.Stack),
