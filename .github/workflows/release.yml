@@ -7,6 +7,16 @@ on:
     branches: [main]
     paths:
       - CHANGELOG.md
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Run in dry-run mode (build only, no publish)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
 
 jobs:
   release:
@@ -64,6 +74,6 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
-          args: release --clean --release-notes=release-notes.md
+          args: release --clean --release-notes=release-notes.md ${{ inputs.dry-run == 'true' && '--skip-publish' || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

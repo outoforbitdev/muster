@@ -31,4 +31,5 @@ checksum:
 
 release:
   draft: false
-  prerelease: false
+  # Auto-detect pre-release based on semver (e.g., 0.1.0-alpha, 1.0.0-rc1)
+  prerelease: auto
