@@ -24,8 +24,6 @@ archives:
     format_overrides:
       - goos: windows
         format: zip
-    default_libname: muster
-    default_binary_name: muster
 
 checksum:
   name_template: 'SHA256SUMS'
