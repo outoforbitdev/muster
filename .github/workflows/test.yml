@@ -13,15 +13,15 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Set up Go
-        uses: actions/setup-go@41dfa10bad2ba9c5c13ce3406b6e8a7f49d11921 # v5.1.0
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
         with:
           go-version: '1.26.5'
 
       - name: Run linter
-        uses: golangci/golangci-lint-action@adc3e2e007b5e92b5dc23f1ca4f6e538192ddf89 # v6.2.1
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a
         with:
           version: latest
           args: --timeout=5m
