@@ -2,6 +2,24 @@
 
 Workspace orchestrator for Claude Code. Create and manage multi-repo workspaces with coordinated branch checkout and automatic workspace configuration.
 
+<p>
+  <a href="https://github.com/outoforbitdev/muster/actions?query=workflow%3ATest">
+    <img alt="Test workflow" src="https://github.com/outoforbitdev/muster/workflows/Test/badge.svg">
+  </a>
+  <a href="https://github.com/outoforbitdev/muster/actions?query=workflow%3ARelease">
+    <img alt="Release workflow" src="https://github.com/outoforbitdev/muster/workflows/Release/badge.svg">
+  </a>
+  <a href="https://securityscorecards.dev/viewer/?uri=github.com/outoforbitdev/muster">
+    <img alt="OpenSSF Scorecard" src="https://api.securityscorecards.dev/projects/github.com/outoforbitdev/muster/badge">
+  </a>
+  <a href="https://github.com/outoforbitdev/muster/releases/latest">
+    <img alt="Latest release" src="https://img.shields.io/github/v/release/outoforbitdev/muster?logo=github">
+  </a>
+  <a href="https://github.com/outoforbitdev/muster/issues">
+    <img alt="Open issues" src="https://img.shields.io/github/issues/outoforbitdev/muster?logo=github">
+  </a>
+</p>
+
 ## Features
 
 - **Multi-repo workspaces**: Clone multiple repositories into a single workspace
