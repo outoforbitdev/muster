@@ -8,3 +8,6 @@ jobs:
   check-tasks:
     # yamllint disable-line rule:line-length
     uses: outoforbitdev/reusable-workflows-library/.github/workflows/check-tasks.yml@main
+    permissions:
+      pull-requests: read
+      issues: read
