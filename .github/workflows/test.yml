@@ -1,0 +1,30 @@
+name: Test
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test and Lint
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Set up Go
+        uses: actions/setup-go@41dfa10bad2ba9c5c13ce3406b6e8a7f49d11921 # v5.1.0
+        with:
+          go-version: '1.26.5'
+
+      - name: Run linter
+        uses: golangci/golangci-lint-action@adc3e2e007b5e92b5dc23f1ca4f6e538192ddf89 # v6.2.1
+        with:
+          version: latest
+          args: --timeout=5m
+
+      - name: Run tests
+        run: go test ./... -v
