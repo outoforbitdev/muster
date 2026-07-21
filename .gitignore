@@ -23,5 +23,6 @@ coverage.html
 Thumbs.db
 
 # Project-specific
+.agent-wip/
 .agentic-wip/
 .superpowers/
