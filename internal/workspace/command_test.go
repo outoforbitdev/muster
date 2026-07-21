@@ -82,7 +82,7 @@ func TestLaunchAgent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	testFile := filepath.Join(tmpDir, "test.txt")
 	cfg := &config.Config{
@@ -105,7 +105,7 @@ func TestLaunchAgentWithSubstitution(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() { _ = os.RemoveAll(tmpDir) }()
 
 	testFile := filepath.Join(tmpDir, "my-ws-test.txt")
 	cfg := &config.Config{

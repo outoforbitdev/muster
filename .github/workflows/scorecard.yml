@@ -1,0 +1,14 @@
+name: OpenSSF Scorecard
+
+permissions: read-all
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  scorecard:
+    # yamllint disable-line rule:line-length
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/scorecard.yml@main

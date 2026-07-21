@@ -1,0 +1,17 @@
+name: Label Manager
+
+permissions: read-all
+
+on:
+  issues:
+  pull_request:
+  pull_request_target:
+
+jobs:
+  label-manager:
+    # yamllint disable-line rule:line-length
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/label-manager.yml@main
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write

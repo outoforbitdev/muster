@@ -21,7 +21,7 @@ type RepoInfo struct {
 func GenerateCLAUDE(workspace string, stack *config.Stack, repos []RepoInfo) string {
 	var sb strings.Builder
 
-	sb.WriteString(fmt.Sprintf("# Workspace: %s\n\n", workspace))
+	fmt.Fprintf(&sb, "# Workspace: %s\n\n", workspace)
 
 	if stack != nil && stack.Description != "" {
 		sb.WriteString(stack.Description)
@@ -30,9 +30,9 @@ func GenerateCLAUDE(workspace string, stack *config.Stack, repos []RepoInfo) str
 
 	sb.WriteString("## Repos\n\n")
 	for _, repo := range repos {
-		sb.WriteString(fmt.Sprintf("- **%s**: `%s`", repo.Name, repo.Path))
+		fmt.Fprintf(&sb, "- **%s**: `%s`", repo.Name, repo.Path)
 		if repo.Description != "" {
-			sb.WriteString(fmt.Sprintf(" — %s", repo.Description))
+			fmt.Fprintf(&sb, " — %s", repo.Description)
 		}
 		sb.WriteString("\n")
 	}
