@@ -1,0 +1,14 @@
+name: Release
+
+permissions: read-all
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    # yamllint disable-line rule:line-length
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/release.yml@main
+    permissions:
+      contents: write
