@@ -8,7 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial CI/CD pipeline setup with GitHub Actions
 
 ### Changed
 
@@ -19,6 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Security
+
+---
+
+## [0.2.0] - 2026-07-21
+
+### Added
+- Project-level instructions (AGENTS.md and CLAUDE.md)
+
+### Fixed
+- Release workflow now creates git tag before GoReleaser runs (handles first release)
+- Scorecard workflow now has correct permissions (security-events: write, id-token: write)
 
 ---
 
