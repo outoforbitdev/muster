@@ -11,11 +11,17 @@ import (
 
 func TestInitCommand(t *testing.T) {
 	origHome := os.Getenv("HOME")
-	defer os.Setenv("HOME", origHome)
+	defer func() {
+		if err := os.Setenv("HOME", origHome); err != nil {
+			t.Fatalf("failed to restore HOME: %v", err)
+		}
+	}()
 
 	t.Run("successful init creates config", func(t *testing.T) {
 		tempDir := t.TempDir()
-		os.Setenv("HOME", tempDir)
+		if err := os.Setenv("HOME", tempDir); err != nil {
+			t.Fatalf("failed to set HOME: %v", err)
+		}
 
 		cmd := initCmd
 		err := cmd.RunE(cmd, []string{})
@@ -47,7 +53,9 @@ func TestInitCommand(t *testing.T) {
 
 	t.Run("error when config already exists", func(t *testing.T) {
 		tempDir := t.TempDir()
-		os.Setenv("HOME", tempDir)
+		if err := os.Setenv("HOME", tempDir); err != nil {
+			t.Fatalf("failed to set HOME: %v", err)
+		}
 
 		// First init should succeed
 		cmd := initCmd
@@ -65,7 +73,9 @@ func TestInitCommand(t *testing.T) {
 
 	t.Run("creates directory if it doesn't exist", func(t *testing.T) {
 		tempDir := t.TempDir()
-		os.Setenv("HOME", tempDir)
+		if err := os.Setenv("HOME", tempDir); err != nil {
+			t.Fatalf("failed to set HOME: %v", err)
+		}
 
 		cmd := initCmd
 		err := cmd.RunE(cmd, []string{})
