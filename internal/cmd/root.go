@@ -9,6 +9,7 @@ var rootCmd = &cobra.Command{
 	Short: "Muster: Manage multi-repo workspaces with coordinated branches",
 	Long: `Muster is a CLI tool for creating and managing workspaces that contain multiple cloned repositories with coordinated branch checkout and configuration.
 
+Use 'muster init' to initialize your configuration.
 Use 'muster launch' to create a new workspace or open an existing one.
 Use 'muster remove' to delete a workspace.`,
 }
@@ -18,6 +19,7 @@ func Execute() error {
 }
 
 func init() {
+	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(launchCmd)
 	rootCmd.AddCommand(removeCmd)
 }

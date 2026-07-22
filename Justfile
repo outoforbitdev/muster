@@ -30,15 +30,15 @@ clean:
     rm -f coverage.out
 
 # Build and run a quick verification
-verify: build test
+verify: build test fmt lint
     @echo "✅ Build and tests passed"
 
-# Install to PATH
-install: build
-    cp bin/muster /usr/local/bin/muster
-    @echo "✅ Installed muster to /usr/local/bin/muster"
+# Install to GOPATH/bin
+install-muster:
+    go install ./cmd/muster
+    @echo "✅ Installed muster to $(go env GOPATH)/bin/muster"
 
-# Uninstall from PATH
-uninstall:
-    rm -f /usr/local/bin/muster
-    @echo "✅ Uninstalled muster from /usr/local/bin/muster"
+# Uninstall from GOPATH/bin
+uninstall-muster:
+    rm -f $(go env GOPATH)/bin/muster
+    @echo "✅ Uninstalled muster from $(go env GOPATH)/bin/muster"

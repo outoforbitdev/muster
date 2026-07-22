@@ -179,10 +179,10 @@ func TestGetEditorCommand(t *testing.T) {
 
 func TestSubstituteCommandTemplate(t *testing.T) {
 	tests := []struct {
-		command          string
-		workspaceName    string
-		workspacePath    string
-		expected         string
+		command       string
+		workspaceName string
+		workspacePath string
+		expected      string
 	}{
 		{"claude --name {workspace}", "my-ws", "/home/user/.muster/my-ws", "claude --name my-ws"},
 		{"code {workspaceDirectory}", "my-ws", "/tmp/test", "code /tmp/test"},
