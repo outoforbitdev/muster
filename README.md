@@ -46,41 +46,15 @@ go build -o /usr/local/bin/muster ./cmd/muster
 
 ### Configuration File
 
-Create `~/.config/muster/config.json`:
+Initialize your muster configuration:
 
-```json
-{
-  "stacks": {
-    "full-stack": {
-      "repos": [
-        {
-          "url": "https://github.com/yourorg/api",
-          "templateBranchSyntax": "main",
-          "description": "Backend API service"
-        },
-        {
-          "url": "https://github.com/yourorg/web",
-          "templateBranchSyntax": "main",
-          "description": "Next.js frontend"
-        },
-        {
-          "url": "https://github.com/yourorg/shared-types",
-          "templateBranchSyntax": "feature-{workspace}",
-          "description": "Shared TypeScript types",
-          "directory": "types"
-        }
-      ],
-      "description": "api is the backend service. web is the Next.js frontend consuming api. shared-types holds TS types shared between both."
-    }
-  },
-  "defaults": {
-    "checkoutBranchOnLaunch": true,
-    "templateBranchSyntax": "feature-{workspace}"
-  }
-}
+```bash
+muster init
 ```
 
-See `config.example.json` for a complete example.
+This creates a new config file at `~/.config/muster/config.json` with example stacks and defaults. Then edit the file to customize your repositories and stacks.
+
+See `config.example.json` for the complete example configuration structure.
 
 ## Usage
 
