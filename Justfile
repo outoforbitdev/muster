@@ -33,12 +33,12 @@ clean:
 verify: build test
     @echo "✅ Build and tests passed"
 
-# Install to PATH
-install: build
-    cp bin/muster /usr/local/bin/muster
-    @echo "✅ Installed muster to /usr/local/bin/muster"
+# Install to GOPATH/bin
+install:
+    go install ./cmd/muster
+    @echo "✅ Installed muster to $(go env GOPATH)/bin/muster"
 
-# Uninstall from PATH
+# Uninstall from GOPATH/bin
 uninstall:
-    rm -f /usr/local/bin/muster
-    @echo "✅ Uninstalled muster from /usr/local/bin/muster"
+    rm -f $(go env GOPATH)/bin/muster
+    @echo "✅ Uninstalled muster from $(go env GOPATH)/bin/muster"
