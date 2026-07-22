@@ -40,15 +40,15 @@ jobs:
           # Captures everything after the version header until the next version or separator
           awk "/## \[$VERSION\]/,/^(## \[|---)/" CHANGELOG.md | \
             sed '1d;$d' | \
-            sed '/^$/d' > release-notes.md
+            sed '/^$/d' > .release-notes.md
 
-          if [ ! -s release-notes.md ]; then
+          if [ ! -s .release-notes.md ]; then
             echo "Warning: No release notes found for version $VERSION"
-            echo "## $VERSION" > release-notes.md
+            echo "## $VERSION" > .release-notes.md
           fi
 
           echo "Release notes:"
-          cat release-notes.md
+          cat .release-notes.md
 
       - name: Check if tag already exists
         id: check-tag
@@ -72,6 +72,6 @@ jobs:
         uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
-          args: release --clean --release-notes=release-notes.md
+          args: release --clean --release-notes=.release-notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

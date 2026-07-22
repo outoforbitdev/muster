@@ -26,3 +26,6 @@ Thumbs.db
 .agent-wip/
 .agentic-wip/
 .superpowers/
+
+# CI/Release artifacts
+.release-notes.md
