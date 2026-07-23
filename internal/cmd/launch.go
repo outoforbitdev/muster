@@ -37,7 +37,7 @@ If the workspace doesn't exist, this will:
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		workspaceName := args[0]
-		workspacePath := filepath.Join(os.Getenv("HOME"), ".muster", workspaceName)
+		workspacePath := filepath.Join(os.Getenv("HOME"), ".muster", "workspaces", workspaceName)
 
 		// Check if workspace already exists
 		_, err := os.Stat(workspacePath)

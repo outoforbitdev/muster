@@ -21,6 +21,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.1] - 2026-07-23
+
+### Fixed
+- Workspace directory structure: workspaces now created under `~/.muster/workspaces/` instead of directly in `~/.muster/`
+
+---
+
 ## [0.3.0] - 2026-07-22
 
 ### Added

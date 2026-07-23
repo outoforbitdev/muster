@@ -22,7 +22,7 @@ Use --yes to skip the confirmation prompt.`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		workspaceName := args[0]
-		workspacePath := filepath.Join(os.Getenv("HOME"), ".muster", workspaceName)
+		workspacePath := filepath.Join(os.Getenv("HOME"), ".muster", "workspaces", workspaceName)
 
 		// Check if workspace exists
 		if _, err := os.Stat(workspacePath); err != nil {
