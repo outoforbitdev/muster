@@ -19,7 +19,7 @@ func LaunchWorkspace(
 	branch string,
 	noBranch bool,
 ) (string, error) {
-	workspacePath := filepath.Join(os.Getenv("HOME"), ".muster", workspace)
+	workspacePath := filepath.Join(os.Getenv("HOME"), ".muster", "workspaces", workspace)
 
 	// Check if workspace exists
 	if _, err := os.Stat(workspacePath); err == nil {

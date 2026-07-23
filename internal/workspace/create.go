@@ -20,7 +20,7 @@ func CreateWorkspace(
 	noBranch bool,
 ) error {
 	// Expand workspace path
-	workspacePath := filepath.Join(os.Getenv("HOME"), ".muster", workspace)
+	workspacePath := filepath.Join(os.Getenv("HOME"), ".muster", "workspaces", workspace)
 
 	// Create workspace directory
 	fmt.Fprintf(os.Stderr, "Creating workspace at %s...\n", workspacePath)

@@ -184,7 +184,7 @@ func TestSubstituteCommandTemplate(t *testing.T) {
 		workspacePath string
 		expected      string
 	}{
-		{"claude --name {workspace}", "my-ws", "/home/user/.muster/my-ws", "claude --name my-ws"},
+		{"claude --name {workspace}", "my-ws", "/home/user/.muster/workspaces/my-ws", "claude --name my-ws"},
 		{"code {workspaceDirectory}", "my-ws", "/tmp/test", "code /tmp/test"},
 		{"echo {workspace} {workspaceDirectory}", "my-ws", "/path", "echo my-ws /path"},
 		{"no substitution", "my-ws", "/path", "no substitution"},
