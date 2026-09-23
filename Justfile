@@ -5,9 +5,11 @@ default:
     @just --list
 
 # Bootstrap: one-time repository setup
+# Requires golangci-lint (https://golangci-lint.run/welcome/install/) and
+# pre-commit (https://pre-commit.com/#install) to already be installed.
 bootstrap: install
-    @echo "Installing golangci-lint..."
-    go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+    @echo "Installing pre-commit hooks..."
+    pre-commit install
     @echo "✅ Bootstrap complete"
 
 # Install: install project dependencies

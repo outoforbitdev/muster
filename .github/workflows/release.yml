@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - CHANGELOG.md
+  workflow_dispatch:
 
 jobs:
   release:
