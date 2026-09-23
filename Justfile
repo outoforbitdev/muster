@@ -4,6 +4,16 @@
 default:
     @just --list
 
+# Bootstrap: one-time repository setup
+bootstrap: install
+    @echo "Installing golangci-lint..."
+    go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+    @echo "✅ Bootstrap complete"
+
+# Install: install project dependencies
+install:
+    go mod download
+
 # Build the CLI binary
 build:
     go build -o bin/muster ./cmd/muster
@@ -20,9 +30,19 @@ test-coverage:
 fmt:
     go fmt ./...
 
-# Run linter
+# Lint: check code style and formatting
 lint:
     golangci-lint run ./...
+    gofmt -l .
+
+# Lint-write: run linters and automatically fix issues
+lint-write:
+    golangci-lint run --fix ./...
+    go fmt ./...
+
+# Gate: agentic verification step (tests, lint, build)
+gate: build test lint
+    @echo "✅ Gate passed"
 
 # Clean build artifacts
 clean:
