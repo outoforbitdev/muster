@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -37,7 +36,7 @@ If the workspace doesn't exist, this will:
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		workspaceName := args[0]
-		workspacePath := filepath.Join(os.Getenv("HOME"), ".muster", "workspaces", workspaceName)
+		workspacePath := workspace.WorkspacePath(launchStacks, workspaceName)
 
 		// Check if workspace already exists
 		_, err := os.Stat(workspacePath)

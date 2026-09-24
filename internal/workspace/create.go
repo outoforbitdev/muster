@@ -19,8 +19,9 @@ func CreateWorkspace(
 	branch string,
 	noBranch bool,
 ) error {
-	// Expand workspace path
-	workspacePath := filepath.Join(os.Getenv("HOME"), ".muster", "workspaces", workspace)
+	// Expand workspace path, nested under its primary stack to avoid
+	// name collisions between stacks.
+	workspacePath := WorkspacePath(stackNames, workspace)
 
 	// Create workspace directory
 	fmt.Fprintf(os.Stderr, "Creating workspace at %s...\n", workspacePath)
