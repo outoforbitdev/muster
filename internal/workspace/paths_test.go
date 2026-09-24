@@ -26,21 +26,20 @@ func TestWorkspacePath(t *testing.T) {
 	root := filepath.Join(tmpDir, ".muster", "workspaces")
 
 	tests := []struct {
-		name       string
-		stackNames []string
-		workspace  string
-		want       string
+		name      string
+		stackName string
+		workspace string
+		want      string
 	}{
-		{"no stack", []string{}, "my-ws", filepath.Join(root, "my-ws")},
-		{"single stack", []string{"backend"}, "my-ws", filepath.Join(root, "backend", "my-ws")},
-		{"uses primary stack", []string{"backend", "frontend"}, "my-ws", filepath.Join(root, "backend", "my-ws")},
+		{"no stack", "", "my-ws", filepath.Join(root, "my-ws")},
+		{"with stack", "backend", "my-ws", filepath.Join(root, "backend", "my-ws")},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := WorkspacePath(tt.stackNames, tt.workspace)
+			got := WorkspacePath(tt.stackName, tt.workspace)
 			if got != tt.want {
-				t.Errorf("WorkspacePath(%v, %q) = %q, want %q", tt.stackNames, tt.workspace, got, tt.want)
+				t.Errorf("WorkspacePath(%q, %q) = %q, want %q", tt.stackName, tt.workspace, got, tt.want)
 			}
 		})
 	}

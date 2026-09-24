@@ -14,12 +14,12 @@ import (
 func LaunchWorkspace(
 	cfg *config.Config,
 	workspace string,
-	stackNames []string,
+	stackName string,
 	repoURLs []string,
 	branch string,
 	noBranch bool,
 ) (string, error) {
-	workspacePath := WorkspacePath(stackNames, workspace)
+	workspacePath := WorkspacePath(stackName, workspace)
 
 	// Check if workspace exists
 	if _, err := os.Stat(workspacePath); err == nil {
@@ -31,13 +31,12 @@ func LaunchWorkspace(
 	}
 
 	// Workspace doesn't exist, create it
-	if err := CreateWorkspace(cfg, workspace, stackNames, repoURLs, branch, noBranch); err != nil {
+	if err := CreateWorkspace(cfg, workspace, stackName, repoURLs, branch, noBranch); err != nil {
 		return "", fmt.Errorf("failed to create workspace: %w", err)
 	}
 
 	// Generate CLAUDE.md
-	if len(stackNames) > 0 {
-		stackName := stackNames[0]
+	if stackName != "" {
 		stack := cfg.GetStack(stackName)
 		repoInfos := make([]claude.RepoInfo, 0)
 		for _, repo := range stack.Repos {

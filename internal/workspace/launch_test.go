@@ -33,7 +33,7 @@ func TestLaunchWorkspaceExisting(t *testing.T) {
 		},
 	}
 
-	path, err := LaunchWorkspace(cfg, "test-ws", []string{}, []string{}, "", false)
+	path, err := LaunchWorkspace(cfg, "test-ws", "", []string{}, "", false)
 	if err != nil {
 		t.Fatalf("LaunchWorkspace failed: %v", err)
 	}
@@ -66,7 +66,7 @@ func TestLaunchWorkspaceNonExistent(t *testing.T) {
 
 	// Try to launch non-existent workspace with no repos
 	// This should fail because no repos are specified
-	_, err = LaunchWorkspace(cfg, "test-ws", []string{}, []string{}, "", false)
+	_, err = LaunchWorkspace(cfg, "test-ws", "", []string{}, "", false)
 	if err == nil {
 		t.Error("expected error for workspace with no repos")
 	}

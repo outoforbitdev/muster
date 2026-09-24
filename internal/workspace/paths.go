@@ -13,13 +13,13 @@ func WorkspacesRoot() string {
 
 // WorkspacePath returns the on-disk path for a workspace. To prevent name
 // collisions between stacks, workspaces created from a stack are nested
-// under a subdirectory named after their primary (first) stack. Workspaces
-// created without a stack (repos added via --repo only) live directly under
-// the workspaces root.
-func WorkspacePath(stackNames []string, workspaceName string) string {
+// under a subdirectory named after that stack. Workspaces created without a
+// stack (repos added via --repo only) live directly under the workspaces
+// root.
+func WorkspacePath(stackName, workspaceName string) string {
 	root := WorkspacesRoot()
-	if len(stackNames) > 0 {
-		return filepath.Join(root, stackNames[0], workspaceName)
+	if stackName != "" {
+		return filepath.Join(root, stackName, workspaceName)
 	}
 	return filepath.Join(root, workspaceName)
 }

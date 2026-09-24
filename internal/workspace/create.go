@@ -14,14 +14,14 @@ import (
 func CreateWorkspace(
 	cfg *config.Config,
 	workspace string,
-	stackNames []string,
+	stackName string,
 	repoURLs []string,
 	branch string,
 	noBranch bool,
 ) error {
-	// Expand workspace path, nested under its primary stack to avoid
-	// name collisions between stacks.
-	workspacePath := WorkspacePath(stackNames, workspace)
+	// Expand workspace path, nested under its stack to avoid name
+	// collisions between stacks.
+	workspacePath := WorkspacePath(stackName, workspace)
 
 	// Create workspace directory
 	fmt.Fprintf(os.Stderr, "Creating workspace at %s...\n", workspacePath)
@@ -29,11 +29,11 @@ func CreateWorkspace(
 		return fmt.Errorf("failed to create workspace directory: %w", err)
 	}
 
-	// Collect repos from stacks and explicit URLs
+	// Collect repos from the stack and explicit URLs
 	reposToClone := make([]RepoToClone, 0)
 
-	// Add repos from stacks
-	for _, stackName := range stackNames {
+	// Add repos from the stack
+	if stackName != "" {
 		stack := cfg.GetStack(stackName)
 		if stack == nil {
 			return fmt.Errorf("stack %q not found in config", stackName)
