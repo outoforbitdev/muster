@@ -5,19 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Added
+## [0.4.0] - 2026-09-25
 
 ### Changed
-
-### Deprecated
-
-### Removed
+- `muster launch --stack` now accepts a single stack name instead of multiple repeated flags
 
 ### Fixed
-
-### Security
+- Workspaces created from a stack are now nested under `~/.muster/workspaces/<stack>/<workspace>` to prevent name collisions between stacks; `muster remove` now accepts `--stack` to disambiguate if needed
 
 ---
 
