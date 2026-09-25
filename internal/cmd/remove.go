@@ -4,13 +4,17 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
+
+	"github.com/outoforbitdev/muster/internal/workspace"
 )
 
-var removeConfirm bool
+var (
+	removeConfirm bool
+	removeStack   string
+)
 
 var removeCmd = &cobra.Command{
 	Use:   "remove <workspace>",
@@ -18,18 +22,18 @@ var removeCmd = &cobra.Command{
 	Long: `Remove a workspace and all its contents.
 
 By default, you will be prompted to confirm deletion.
-Use --yes to skip the confirmation prompt.`,
+Use --yes to skip the confirmation prompt.
+
+Workspaces created from a stack live in a subdirectory named after that
+stack. If a workspace name exists under more than one stack, use --stack
+to specify which one to remove.`,
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		workspaceName := args[0]
-		workspacePath := filepath.Join(os.Getenv("HOME"), ".muster", "workspaces", workspaceName)
 
-		// Check if workspace exists
-		if _, err := os.Stat(workspacePath); err != nil {
-			if os.IsNotExist(err) {
-				return fmt.Errorf("workspace %q not found at %s", workspaceName, workspacePath)
-			}
-			return fmt.Errorf("failed to check workspace: %w", err)
+		workspacePath, err := workspace.FindWorkspacePath(removeStack, workspaceName)
+		if err != nil {
+			return err
 		}
 
 		// Ask for confirmation if not --yes
@@ -61,4 +65,5 @@ Use --yes to skip the confirmation prompt.`,
 
 func init() {
 	removeCmd.Flags().BoolVarP(&removeConfirm, "yes", "y", false, "Skip confirmation prompt and immediately delete the workspace")
+	removeCmd.Flags().StringVarP(&removeStack, "stack", "s", "", "Stack the workspace was created from, if the name is ambiguous across stacks")
 }

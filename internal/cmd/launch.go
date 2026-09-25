@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -12,7 +11,7 @@ import (
 )
 
 var (
-	launchStacks   []string
+	launchStack    string
 	launchRepos    []string
 	launchBranch   string
 	launchNoBranch bool
@@ -37,7 +36,7 @@ If the workspace doesn't exist, this will:
 	Args: cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		workspaceName := args[0]
-		workspacePath := filepath.Join(os.Getenv("HOME"), ".muster", "workspaces", workspaceName)
+		workspacePath := workspace.WorkspacePath(launchStack, workspaceName)
 
 		// Check if workspace already exists
 		_, err := os.Stat(workspacePath)
@@ -53,7 +52,7 @@ If the workspace doesn't exist, this will:
 		workspacePath, err = workspace.LaunchWorkspace(
 			cfg,
 			workspaceName,
-			launchStacks,
+			launchStack,
 			launchRepos,
 			launchBranch,
 			launchNoBranch,
@@ -87,7 +86,7 @@ If the workspace doesn't exist, this will:
 }
 
 func init() {
-	launchCmd.Flags().StringSliceVarP(&launchStacks, "stack", "s", []string{}, "Load repos from a named stack in config (repeatable)")
+	launchCmd.Flags().StringVarP(&launchStack, "stack", "s", "", "Load repos from a named stack in config")
 	launchCmd.Flags().StringSliceVarP(&launchRepos, "repo", "r", []string{}, "Add individual repos by git URL (repeatable)")
 	launchCmd.Flags().StringVar(&launchBranch, "branch", "", "Default branch to checkout for all repos (supports {workspace} template)")
 	launchCmd.Flags().BoolVar(&launchNoBranch, "no-branch", false, "Skip branch checkout; use default branches")
