@@ -149,6 +149,31 @@ Skip confirmation:
 muster remove my-workspace --yes
 ```
 
+### List Workspaces or Stacks
+
+List all workspace names found on disk:
+
+```bash
+muster list
+# or
+muster ls
+```
+
+List all stack names defined in the config:
+
+```bash
+muster list stacks
+```
+
+Add `--all` (`-a`) to any list to show details: for workspaces, the stack
+each belongs to (if any) and their cloned repos; for stacks, their
+description and repos:
+
+```bash
+muster list --all
+muster list stacks --all
+```
+
 ## Configuration Reference
 
 ### Config Structure
