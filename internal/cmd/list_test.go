@@ -59,8 +59,11 @@ func TestListCommand_Workspaces(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(root, "flat-ws", "repo-a", ".git"), 0755); err != nil {
 		t.Fatalf("failed to create fake repo: %v", err)
 	}
+	if err := os.MkdirAll(filepath.Join(root, "backend", "stacked-ws", "repo-b", ".git"), 0755); err != nil {
+		t.Fatalf("failed to create fake repo: %v", err)
+	}
 
-	t.Run("no target defaults to workspaces", func(t *testing.T) {
+	t.Run("no target defaults to workspaces, concise by default", func(t *testing.T) {
 		out, err := captureStdout(t, func() error {
 			cmd := listCmd
 			return cmd.RunE(cmd, []string{})
@@ -71,12 +74,12 @@ func TestListCommand_Workspaces(t *testing.T) {
 		if !bytes.Contains([]byte(out), []byte("flat-ws")) {
 			t.Errorf("expected output to contain %q, got %q", "flat-ws", out)
 		}
-		if !bytes.Contains([]byte(out), []byte("repo-a")) {
-			t.Errorf("expected output to contain %q, got %q", "repo-a", out)
+		if bytes.Contains([]byte(out), []byte("repo-a")) {
+			t.Errorf("expected concise output to omit repos, got %q", out)
 		}
 	})
 
-	t.Run("explicit workspaces target", func(t *testing.T) {
+	t.Run("explicit workspaces target, concise", func(t *testing.T) {
 		out, err := captureStdout(t, func() error {
 			cmd := listCmd
 			return cmd.RunE(cmd, []string{"workspaces"})
@@ -86,6 +89,24 @@ func TestListCommand_Workspaces(t *testing.T) {
 		}
 		if !bytes.Contains([]byte(out), []byte("flat-ws")) {
 			t.Errorf("expected output to contain %q, got %q", "flat-ws", out)
+		}
+	})
+
+	t.Run("--all shows repos and stack membership", func(t *testing.T) {
+		out, err := captureStdout(t, func() error {
+			return listWorkspaces(true)
+		})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if !bytes.Contains([]byte(out), []byte("flat-ws")) {
+			t.Errorf("expected output to contain %q, got %q", "flat-ws", out)
+		}
+		if !bytes.Contains([]byte(out), []byte("repo-a")) {
+			t.Errorf("expected --all output to include repos, got %q", out)
+		}
+		if !bytes.Contains([]byte(out), []byte("stacked-ws (stack: backend)")) {
+			t.Errorf("expected --all output to show stack membership, got %q", out)
 		}
 	})
 
@@ -125,19 +146,39 @@ func TestListCommand_Stacks(t *testing.T) {
 		t.Fatalf("failed to write config: %v", err)
 	}
 
-	out, err := captureStdout(t, func() error {
-		cmd := listCmd
-		return cmd.RunE(cmd, []string{"stacks"})
+	t.Run("concise by default", func(t *testing.T) {
+		out, err := captureStdout(t, func() error {
+			cmd := listCmd
+			return cmd.RunE(cmd, []string{"stacks"})
+		})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if !bytes.Contains([]byte(out), []byte("backend")) {
+			t.Errorf("expected output to contain stack name, got %q", out)
+		}
+		if bytes.Contains([]byte(out), []byte("Backend services")) {
+			t.Errorf("expected concise output to omit description, got %q", out)
+		}
+		if bytes.Contains([]byte(out), []byte("git@github.com:org/api.git")) {
+			t.Errorf("expected concise output to omit repos, got %q", out)
+		}
 	})
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if !bytes.Contains([]byte(out), []byte("backend: Backend services")) {
-		t.Errorf("expected output to contain stack name and description, got %q", out)
-	}
-	if !bytes.Contains([]byte(out), []byte("git@github.com:org/api.git")) {
-		t.Errorf("expected output to contain repo URL, got %q", out)
-	}
+
+	t.Run("--all shows description and repos", func(t *testing.T) {
+		out, err := captureStdout(t, func() error {
+			return listStacks(true)
+		})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if !bytes.Contains([]byte(out), []byte("backend: Backend services")) {
+			t.Errorf("expected output to contain stack name and description, got %q", out)
+		}
+		if !bytes.Contains([]byte(out), []byte("git@github.com:org/api.git")) {
+			t.Errorf("expected output to contain repo URL, got %q", out)
+		}
+	})
 }
 
 func TestListCommand_UnknownTarget(t *testing.T) {

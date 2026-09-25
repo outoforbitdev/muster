@@ -10,17 +10,21 @@ import (
 	"github.com/outoforbitdev/muster/internal/workspace"
 )
 
+var listAll bool
+
 var listCmd = &cobra.Command{
 	Use:     "list [workspaces|stacks]",
 	Aliases: []string{"ls"},
 	Short:   "List workspaces or stacks",
 	Long: `List available workspaces or stacks.
 
-With no argument, or "workspaces", lists all workspaces found on disk along
-with the stack they belong to (if any) and their cloned repos.
+With no argument, or "workspaces", lists all workspace names found on disk.
 
-With "stacks", lists all stacks defined in the config along with their
-description and repos.`,
+With "stacks", lists all stack names defined in the config.
+
+By default, output is concise: just names. Use --all to also show, for
+workspaces, the stack each belongs to (if any) and their cloned repos; and
+for stacks, their description and repos.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		target := "workspaces"
@@ -30,18 +34,23 @@ description and repos.`,
 
 		switch target {
 		case "workspaces", "workspace", "ws":
-			return listWorkspaces()
+			return listWorkspaces(listAll)
 		case "stacks", "stack":
-			return listStacks()
+			return listStacks(listAll)
 		default:
 			return fmt.Errorf(`unknown list target %q: expected "workspaces" or "stacks"`, target)
 		}
 	},
 }
 
-// listWorkspaces prints all workspaces found on disk, grouped implicitly by
-// the sorted order returned from workspace.ListWorkspaces.
-func listWorkspaces() error {
+func init() {
+	listCmd.Flags().BoolVarP(&listAll, "all", "a", false, "Show details: stack membership and repos for workspaces, description and repos for stacks")
+}
+
+// listWorkspaces prints workspaces found on disk, sorted per
+// workspace.ListWorkspaces. In concise mode (the default) it prints just
+// workspace names; with all set it also prints stack membership and repos.
+func listWorkspaces(all bool) error {
 	workspaces, err := workspace.ListWorkspaces()
 	if err != nil {
 		return fmt.Errorf("failed to list workspaces: %w", err)
@@ -53,6 +62,11 @@ func listWorkspaces() error {
 	}
 
 	for _, ws := range workspaces {
+		if !all {
+			fmt.Println(ws.Name)
+			continue
+		}
+
 		if ws.Stack != "" {
 			fmt.Printf("%s (stack: %s)\n", ws.Name, ws.Stack)
 		} else {
@@ -66,8 +80,10 @@ func listWorkspaces() error {
 	return nil
 }
 
-// listStacks prints all stacks defined in the config, sorted by name.
-func listStacks() error {
+// listStacks prints stacks defined in the config, sorted by name. In
+// concise mode (the default) it prints just stack names; with all set it
+// also prints each stack's description and repos.
+func listStacks(all bool) error {
 	cfg, err := config.Load()
 	if err != nil {
 		return fmt.Errorf("failed to load config: %w", err)
@@ -85,6 +101,11 @@ func listStacks() error {
 	sort.Strings(names)
 
 	for _, name := range names {
+		if !all {
+			fmt.Println(name)
+			continue
+		}
+
 		stack := cfg.Stacks[name]
 		if stack.Description != "" {
 			fmt.Printf("%s: %s\n", name, stack.Description)
