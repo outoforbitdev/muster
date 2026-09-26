@@ -165,13 +165,29 @@ List all stack names defined in the config:
 muster list stacks
 ```
 
-Add `--all` (`-a`) to any list to show details: for workspaces, the stack
-each belongs to (if any) and their cloned repos; for stacks, their
-description and repos:
+Add `--all` (`-a`) to render a detailed table instead: for workspaces, each
+workspace's stack (if any) and cloned repos; for stacks, each stack's repos
+and their descriptions (wrapped to fit).
 
 ```bash
 muster list --all
+```
+
+```
+WORKSPACE     STACK    REPO
+my-app                 frontend
+                        backend
+other-app     backend  api
+```
+
+```bash
 muster list stacks --all
+```
+
+```
+STACK    REPO     DESCRIPTION
+backend  api      Backend services API
+         worker   Background job worker
 ```
 
 ## Configuration Reference

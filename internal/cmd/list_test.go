@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/outoforbitdev/muster/internal/config"
@@ -121,7 +122,7 @@ func TestListCommand_Workspaces(t *testing.T) {
 		}
 	})
 
-	t.Run("--all shows repos and stack membership", func(t *testing.T) {
+	t.Run("--all renders a table with repos and stack membership", func(t *testing.T) {
 		out, err := captureStdout(t, func() error {
 			cfg, err := config.Load()
 			if err != nil {
@@ -132,14 +133,26 @@ func TestListCommand_Workspaces(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if !bytes.Contains([]byte(out), []byte("flat-ws")) {
-			t.Errorf("expected output to contain %q, got %q", "flat-ws", out)
+
+		lines := strings.Split(strings.TrimRight(out, "\n"), "\n")
+		if len(lines) == 0 || !strings.Contains(lines[0], "WORKSPACE") || !strings.Contains(lines[0], "STACK") || !strings.Contains(lines[0], "REPO") {
+			t.Fatalf("expected header row with WORKSPACE/STACK/REPO, got %q", out)
 		}
-		if !bytes.Contains([]byte(out), []byte("repo-a")) {
-			t.Errorf("expected --all output to include repos, got %q", out)
+
+		var flatRow, stackedRow string
+		for _, line := range lines[1:] {
+			if strings.Contains(line, "flat-ws") {
+				flatRow = line
+			}
+			if strings.Contains(line, "stacked-ws") {
+				stackedRow = line
+			}
 		}
-		if !bytes.Contains([]byte(out), []byte("stacked-ws (stack: backend)")) {
-			t.Errorf("expected --all output to show stack membership, got %q", out)
+		if !strings.Contains(flatRow, "repo-a") {
+			t.Errorf("expected flat-ws row to contain repo-a, got %q", flatRow)
+		}
+		if !strings.Contains(stackedRow, "backend") || !strings.Contains(stackedRow, "repo-b") {
+			t.Errorf("expected stacked-ws row to contain stack backend and repo-b, got %q", stackedRow)
 		}
 	})
 
@@ -171,7 +184,13 @@ func TestListCommand_Stacks(t *testing.T) {
 		"stacks": {
 			"backend": {
 				"description": "Backend services",
-				"repos": [{"url": "git@github.com:org/api.git"}]
+				"repos": [
+					{
+						"url": "git@github.com:org/api.git",
+						"description": "This is a fairly long description that should wrap across multiple lines in the table"
+					},
+					{"url": "git@github.com:org/worker.git"}
+				]
 			}
 		},
 		"defaults": {"checkoutBranchOnLaunch": true}
@@ -199,7 +218,7 @@ func TestListCommand_Stacks(t *testing.T) {
 		}
 	})
 
-	t.Run("--all shows description and repos", func(t *testing.T) {
+	t.Run("--all renders a table with repos and wrapped descriptions", func(t *testing.T) {
 		out, err := captureStdout(t, func() error {
 			cfg, err := config.Load()
 			if err != nil {
@@ -210,11 +229,24 @@ func TestListCommand_Stacks(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if !bytes.Contains([]byte(out), []byte("backend: Backend services")) {
-			t.Errorf("expected output to contain stack name and description, got %q", out)
+
+		lines := strings.Split(strings.TrimRight(out, "\n"), "\n")
+		if len(lines) == 0 || !strings.Contains(lines[0], "STACK") || !strings.Contains(lines[0], "REPO") || !strings.Contains(lines[0], "DESCRIPTION") {
+			t.Fatalf("expected header row with STACK/REPO/DESCRIPTION, got %q", out)
 		}
-		if !bytes.Contains([]byte(out), []byte("git@github.com:org/api.git")) {
-			t.Errorf("expected output to contain repo URL, got %q", out)
+
+		if !strings.Contains(out, "backend") {
+			t.Errorf("expected output to contain stack name, got %q", out)
+		}
+		if !strings.Contains(out, "api") {
+			t.Errorf("expected output to contain repo name derived from URL, got %q", out)
+		}
+		if !strings.Contains(out, "worker") {
+			t.Errorf("expected output to contain second repo name, got %q", out)
+		}
+		// header + api's 2 wrapped description lines + worker's 1 line = 4.
+		if len(lines) != 4 {
+			t.Errorf("expected the long description to wrap across multiple rows, got %d lines: %q", len(lines), out)
 		}
 	})
 }

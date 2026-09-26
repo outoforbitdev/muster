@@ -2,7 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path"
 	"sort"
+	"strings"
 
 	"github.com/spf13/cobra"
 
@@ -22,9 +25,9 @@ With no argument, or "workspaces", lists all workspace names found on disk.
 
 With "stacks", lists all stack names defined in the config.
 
-By default, output is concise: just names. Use --all to also show, for
-workspaces, the stack each belongs to (if any) and their cloned repos; and
-for stacks, their description and repos.`,
+By default, output is concise: just names. Use --all for a table view: for
+workspaces, each workspace's stack (if any) and cloned repos; for stacks,
+each stack's repos and their descriptions.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		target := "workspaces"
@@ -57,7 +60,8 @@ func init() {
 
 // listWorkspaces prints workspaces found on disk, sorted per
 // workspace.ListWorkspaces. In concise mode (the default) it prints just
-// workspace names; with all set it also prints stack membership and repos.
+// workspace names; with all set it prints a WORKSPACE/STACK/REPO table,
+// repeating a workspace's name and stack only on its first repo row.
 func listWorkspaces(cfg *config.Config, all bool) error {
 	workspaces, err := workspace.ListWorkspaces(cfg)
 	if err != nil {
@@ -69,28 +73,36 @@ func listWorkspaces(cfg *config.Config, all bool) error {
 		return nil
 	}
 
-	for _, ws := range workspaces {
-		if !all {
+	if !all {
+		for _, ws := range workspaces {
 			fmt.Println(ws.Name)
-			continue
 		}
+		return nil
+	}
 
-		if ws.Stack != "" {
-			fmt.Printf("%s (stack: %s)\n", ws.Name, ws.Stack)
-		} else {
-			fmt.Println(ws.Name)
+	var rows [][]string
+	for _, ws := range workspaces {
+		repos := ws.Repos
+		if len(repos) == 0 {
+			repos = []string{""}
 		}
-		for _, repo := range ws.Repos {
-			fmt.Printf("  - %s\n", repo)
+		for i, repo := range repos {
+			if i == 0 {
+				rows = append(rows, []string{ws.Name, ws.Stack, repo})
+			} else {
+				rows = append(rows, []string{"", "", repo})
+			}
 		}
 	}
 
+	renderTable(os.Stdout, []string{"WORKSPACE", "STACK", "REPO"}, rows)
 	return nil
 }
 
 // listStacks prints stacks defined in the config, sorted by name. In
 // concise mode (the default) it prints just stack names; with all set it
-// also prints each stack's description and repos.
+// prints a STACK/REPO/DESCRIPTION table, wrapping each repo's description
+// and repeating a stack's name only on its first repo row.
 func listStacks(cfg *config.Config, all bool) error {
 	if len(cfg.Stacks) == 0 {
 		fmt.Println("No stacks configured.")
@@ -103,22 +115,45 @@ func listStacks(cfg *config.Config, all bool) error {
 	}
 	sort.Strings(names)
 
-	for _, name := range names {
-		if !all {
+	if !all {
+		for _, name := range names {
 			fmt.Println(name)
+		}
+		return nil
+	}
+
+	var rows [][]string
+	for _, name := range names {
+		stack := cfg.Stacks[name]
+		if len(stack.Repos) == 0 {
+			rows = append(rows, []string{name, "", ""})
 			continue
 		}
 
-		stack := cfg.Stacks[name]
-		if stack.Description != "" {
-			fmt.Printf("%s: %s\n", name, stack.Description)
-		} else {
-			fmt.Println(name)
-		}
-		for _, repo := range stack.Repos {
-			fmt.Printf("  - %s\n", repo.URL)
+		for i, repo := range stack.Repos {
+			descLines := wrapText(repo.Description, descriptionWrapWidth)
+			for j, line := range descLines {
+				switch {
+				case i == 0 && j == 0:
+					rows = append(rows, []string{name, repoName(repo), line})
+				case j == 0:
+					rows = append(rows, []string{"", repoName(repo), line})
+				default:
+					rows = append(rows, []string{"", "", line})
+				}
+			}
 		}
 	}
 
+	renderTable(os.Stdout, []string{"STACK", "REPO", "DESCRIPTION"}, rows)
 	return nil
+}
+
+// repoName derives a short, human-readable name for a repo: its configured
+// directory override, or its URL's base name with a trailing ".git" stripped.
+func repoName(repo config.Repo) string {
+	if repo.Directory != "" {
+		return repo.Directory
+	}
+	return strings.TrimSuffix(path.Base(repo.URL), ".git")
 }
