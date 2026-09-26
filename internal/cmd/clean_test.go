@@ -144,6 +144,65 @@ func TestRunCleanFiltersToNamedWorkspaces(t *testing.T) {
 	}
 }
 
+func TestRunCleanWrapsLongStateAcrossRowsEvenWithLongWorkspaceAndRepoNames(t *testing.T) {
+	tempDir := withTempHome(t)
+	writeConfig(t, tempDir)
+	root := filepath.Join(tempDir, ".muster", "workspaces")
+
+	// A long workspace/repo name eats into the terminal width available to
+	// the STATE column; the wrap width must account for that, or the
+	// terminal itself will re-wrap the row, breaking mid-word.
+	repoPath := initCleanRepo(t, filepath.Join(root, "22-create-guideline-script", "reusable-workflows-library"))
+	runCleanGit(t, repoPath, "checkout", "-b", "feature")
+	runCleanGit(t, repoPath, "commit", "--allow-empty", "-m", "feature work")
+
+	out, err := captureStdout(t, func() error {
+		return runClean(nil, false, false, nil)
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	lines := strings.Split(strings.TrimRight(out, "\n"), "\n")
+	var longestLine string
+	for _, line := range lines {
+		if len(line) > len(longestLine) {
+			longestLine = line
+		}
+	}
+	// A common terminal width; the full rendered row (all columns, tab
+	// expansion included) must fit within it so the terminal never has to
+	// re-wrap a row itself.
+	const commonTerminalWidth = 80
+	if len(longestLine) > commonTerminalWidth {
+		t.Errorf("expected rendered row to fit within %d columns, got line of length %d: %q", commonTerminalWidth, len(longestLine), longestLine)
+	}
+}
+
+func TestRunCleanWorkspaceWithNoReposIsNotSafe(t *testing.T) {
+	tempDir := withTempHome(t)
+	writeConfig(t, tempDir)
+	root := filepath.Join(tempDir, ".muster", "workspaces")
+
+	if err := os.MkdirAll(filepath.Join(root, "empty-ws"), 0o755); err != nil {
+		t.Fatalf("failed to create empty workspace dir: %v", err)
+	}
+
+	out, err := captureStdout(t, func() error {
+		return runClean(nil, false, false, nil)
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !strings.Contains(out, "empty-ws") || !strings.Contains(out, "no repos found") {
+		t.Errorf("expected output to report empty-ws has no repos, got %q", out)
+	}
+	if !strings.Contains(out, "0 workspace(s) safe to clean") {
+		t.Errorf("expected a workspace with no repos to be reported as not safe, got %q", out)
+	}
+}
+
 func TestRunCleanUnknownWorkspaceNameErrors(t *testing.T) {
 	tempDir := withTempHome(t)
 	writeConfig(t, tempDir)

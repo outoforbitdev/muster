@@ -70,38 +70,64 @@ func runClean(names []string, write, yes bool, checkMerged workspace.MergeChecke
 		return nil
 	}
 
+	type evaluatedWorkspace struct {
+		ws     workspace.Info
+		states []workspace.RepoState
+	}
+
+	var evaluated []evaluatedWorkspace
+	maxWorkspaceLen := len("WORKSPACE")
+	maxStackLen := len("STACK")
+	maxRepoLen := len("REPO")
+
+	for _, ws := range workspaces {
+		var states []workspace.RepoState
+		if len(ws.Repos) == 0 {
+			states = []workspace.RepoState{{Status: workspace.StatusUnknown, Detail: "no repos found"}}
+		}
+		for _, repo := range ws.Repos {
+			states = append(states, workspace.EvaluateRepo(filepath.Join(ws.Path, repo), repo, checkMerged))
+			if len(repo) > maxRepoLen {
+				maxRepoLen = len(repo)
+			}
+		}
+		if len(ws.Name) > maxWorkspaceLen {
+			maxWorkspaceLen = len(ws.Name)
+		}
+		if len(ws.Stack) > maxStackLen {
+			maxStackLen = len(ws.Stack)
+		}
+		evaluated = append(evaluated, evaluatedWorkspace{ws: ws, states: states})
+	}
+
+	stateWrapWidth := stateColumnWrapWidth(maxWorkspaceLen, maxStackLen, maxRepoLen)
+
 	var rows [][]string
 	var safeWorkspaces []workspace.Info
 	unsafeCount := 0
 
-	for _, ws := range workspaces {
-		repos := ws.Repos
-		if len(repos) == 0 {
-			repos = []string{""}
-		}
-
-		var states []workspace.RepoState
-		for _, repo := range repos {
-			if repo == "" {
-				continue
-			}
-			states = append(states, workspace.EvaluateRepo(filepath.Join(ws.Path, repo), repo, checkMerged))
-		}
-
-		for i, state := range states {
+	for _, ew := range evaluated {
+		for i, state := range ew.states {
 			status := state.Status
 			if state.Detail != "" {
 				status = status + ", " + state.Detail
 			}
-			if i == 0 {
-				rows = append(rows, []string{ws.Name, ws.Stack, state.Repo, status})
-			} else {
-				rows = append(rows, []string{"", "", state.Repo, status})
+
+			statusLines := wrapText(status, stateWrapWidth)
+			for j, line := range statusLines {
+				switch {
+				case i == 0 && j == 0:
+					rows = append(rows, []string{ew.ws.Name, ew.ws.Stack, state.Repo, line})
+				case j == 0:
+					rows = append(rows, []string{"", "", state.Repo, line})
+				default:
+					rows = append(rows, []string{"", "", "", line})
+				}
 			}
 		}
 
-		if workspace.IsWorkspaceSafe(states) {
-			safeWorkspaces = append(safeWorkspaces, ws)
+		if workspace.IsWorkspaceSafe(ew.states) {
+			safeWorkspaces = append(safeWorkspaces, ew.ws)
 		} else {
 			unsafeCount++
 		}
@@ -118,6 +144,34 @@ func runClean(names []string, write, yes bool, checkMerged workspace.MergeChecke
 	}
 
 	return deleteWorkspaces(safeWorkspaces, yes)
+}
+
+// tableTerminalWidth is the terminal width the STATE column is wrapped to
+// fit, so a rendered row never needs re-wrapping by the terminal itself
+// (which would break mid-word instead of on a word boundary).
+const tableTerminalWidth = 80
+
+// tabPadding matches the padding renderTable's tabwriter inserts between
+// columns.
+const tabPadding = 2
+
+// minStateWrapWidth is an absolute floor on the STATE column's wrap width:
+// below this, wrapping stops being useful (near one word per line), so it's
+// preferable to let very long workspace/stack/repo names push the row past
+// tableTerminalWidth rather than wrap STATE into an unreadable sliver.
+const minStateWrapWidth = 10
+
+// stateColumnWrapWidth computes how wide the STATE column's wrapped text
+// can be so that, combined with the widest WORKSPACE, STACK, and REPO
+// values (with tabwriter's padding between each), the full row fits within
+// tableTerminalWidth whenever the other columns leave enough room.
+func stateColumnWrapWidth(maxWorkspaceLen, maxStackLen, maxRepoLen int) int {
+	reserved := maxWorkspaceLen + tabPadding + maxStackLen + tabPadding + maxRepoLen + tabPadding
+	width := tableTerminalWidth - reserved
+	if width < minStateWrapWidth {
+		return minStateWrapWidth
+	}
+	return width
 }
 
 // filterWorkspaces returns the subset of workspaces whose Name matches one
