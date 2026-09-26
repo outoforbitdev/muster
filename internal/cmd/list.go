@@ -34,9 +34,17 @@ for stacks, their description and repos.`,
 
 		switch target {
 		case "workspaces", "workspace", "ws":
-			return listWorkspaces(listAll)
+			cfg, err := config.Load()
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+			return listWorkspaces(cfg, listAll)
 		case "stacks", "stack":
-			return listStacks(listAll)
+			cfg, err := config.Load()
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+			return listStacks(cfg, listAll)
 		default:
 			return fmt.Errorf(`unknown list target %q: expected "workspaces" or "stacks"`, target)
 		}
@@ -50,8 +58,8 @@ func init() {
 // listWorkspaces prints workspaces found on disk, sorted per
 // workspace.ListWorkspaces. In concise mode (the default) it prints just
 // workspace names; with all set it also prints stack membership and repos.
-func listWorkspaces(all bool) error {
-	workspaces, err := workspace.ListWorkspaces()
+func listWorkspaces(cfg *config.Config, all bool) error {
+	workspaces, err := workspace.ListWorkspaces(cfg)
 	if err != nil {
 		return fmt.Errorf("failed to list workspaces: %w", err)
 	}
@@ -83,12 +91,7 @@ func listWorkspaces(all bool) error {
 // listStacks prints stacks defined in the config, sorted by name. In
 // concise mode (the default) it prints just stack names; with all set it
 // also prints each stack's description and repos.
-func listStacks(all bool) error {
-	cfg, err := config.Load()
-	if err != nil {
-		return fmt.Errorf("failed to load config: %w", err)
-	}
-
+func listStacks(cfg *config.Config, all bool) error {
 	if len(cfg.Stacks) == 0 {
 		fmt.Println("No stacks configured.")
 		return nil

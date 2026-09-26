@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+
+	"github.com/outoforbitdev/muster/internal/config"
 )
 
 // Info describes a workspace discovered on disk.
@@ -17,11 +19,14 @@ type Info struct {
 
 // ListWorkspaces discovers all workspaces under the workspaces root.
 //
-// A directory is treated as a workspace itself if it directly contains one
-// or more cloned git repos. Otherwise it is treated as a stack container,
-// and each of its subdirectories is listed as a workspace belonging to that
-// stack. Results are sorted by stack, then by name.
-func ListWorkspaces() ([]Info, error) {
+// Workspaces are created flat under the root, except when created from a
+// stack, in which case they're nested one level under a directory named
+// after that stack (see WorkspacePath). Since a stack directory's name
+// always matches a configured stack, cfg.Stacks is used to tell stack
+// container directories apart from flat workspace directories, rather than
+// inspecting the workspace's contents (which may be incomplete or broken).
+// Results are sorted by stack, then by name.
+func ListWorkspaces(cfg *config.Config) ([]Info, error) {
 	root := WorkspacesRoot()
 
 	entries, err := os.ReadDir(root)
@@ -41,12 +46,12 @@ func ListWorkspaces() ([]Info, error) {
 
 		path := filepath.Join(root, entry.Name())
 
-		if isWorkspaceDir(path) {
+		if _, isStack := cfg.Stacks[entry.Name()]; !isStack {
 			workspaces = append(workspaces, newInfo("", entry.Name(), path))
 			continue
 		}
 
-		// Treat as a stack container; list its subdirectories as workspaces.
+		// entry.Name() is a stack; its subdirectories are workspaces.
 		subEntries, err := os.ReadDir(path)
 		if err != nil {
 			continue
@@ -70,7 +75,7 @@ func ListWorkspaces() ([]Info, error) {
 	return workspaces, nil
 }
 
-// newInfo builds an Info for a workspace directory, populating its cloned repos.
+// newInfo builds an Info for a workspace directory, populating its repos.
 func newInfo(stack, name, path string) Info {
 	return Info{
 		Name:  name,
@@ -80,15 +85,10 @@ func newInfo(stack, name, path string) Info {
 	}
 }
 
-// isWorkspaceDir reports whether path directly contains at least one cloned
-// git repo, which distinguishes a workspace directory from a stack
-// container directory.
-func isWorkspaceDir(path string) bool {
-	return len(listRepos(path)) > 0
-}
-
-// listRepos returns the names of immediate subdirectories of path that are
-// cloned git repos, sorted alphabetically.
+// listRepos returns the names of a workspace's immediate subdirectories,
+// sorted alphabetically. Each one is expected to be a cloned repo, but
+// directories are listed as-is (rather than requiring a ".git" entry) so a
+// repo that failed to clone or lost its ".git" still shows up.
 func listRepos(path string) []string {
 	entries, err := os.ReadDir(path)
 	if err != nil {
@@ -97,10 +97,7 @@ func listRepos(path string) []string {
 
 	var repos []string
 	for _, entry := range entries {
-		if !entry.IsDir() {
-			continue
-		}
-		if _, err := os.Stat(filepath.Join(path, entry.Name(), ".git")); err == nil {
+		if entry.IsDir() {
 			repos = append(repos, entry.Name())
 		}
 	}

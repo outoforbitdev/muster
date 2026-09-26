@@ -2,11 +2,39 @@ package cmd
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/outoforbitdev/muster/internal/config"
 )
+
+// writeConfig writes a minimal config.json under tempDir/.config/muster
+// declaring the given stack names (each with one placeholder repo).
+func writeConfig(t *testing.T, tempDir string, stackNames ...string) {
+	t.Helper()
+
+	configDir := filepath.Join(tempDir, ".config", "muster")
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		t.Fatalf("failed to create config dir: %v", err)
+	}
+
+	stacks := make(map[string]config.Stack, len(stackNames))
+	for _, name := range stackNames {
+		stacks[name] = config.Stack{Repos: []config.Repo{{URL: "git@github.com:org/" + name + ".git"}}}
+	}
+	cfg := config.Config{Stacks: stacks}
+
+	data, err := json.Marshal(cfg)
+	if err != nil {
+		t.Fatalf("failed to marshal config: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(configDir, "config.json"), data, 0644); err != nil {
+		t.Fatalf("failed to write config: %v", err)
+	}
+}
 
 // withTempHome points HOME at a fresh temp dir for the duration of the test.
 func withTempHome(t *testing.T) string {
@@ -62,6 +90,7 @@ func TestListCommand_Workspaces(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(root, "backend", "stacked-ws", "repo-b", ".git"), 0755); err != nil {
 		t.Fatalf("failed to create fake repo: %v", err)
 	}
+	writeConfig(t, tempDir, "backend")
 
 	t.Run("no target defaults to workspaces, concise by default", func(t *testing.T) {
 		out, err := captureStdout(t, func() error {
@@ -94,7 +123,11 @@ func TestListCommand_Workspaces(t *testing.T) {
 
 	t.Run("--all shows repos and stack membership", func(t *testing.T) {
 		out, err := captureStdout(t, func() error {
-			return listWorkspaces(true)
+			cfg, err := config.Load()
+			if err != nil {
+				return err
+			}
+			return listWorkspaces(cfg, true)
 		})
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
@@ -111,7 +144,8 @@ func TestListCommand_Workspaces(t *testing.T) {
 	})
 
 	t.Run("no workspaces found", func(t *testing.T) {
-		withTempHome(t)
+		tempDir := withTempHome(t)
+		writeConfig(t, tempDir)
 
 		out, err := captureStdout(t, func() error {
 			cmd := listCmd
@@ -167,7 +201,11 @@ func TestListCommand_Stacks(t *testing.T) {
 
 	t.Run("--all shows description and repos", func(t *testing.T) {
 		out, err := captureStdout(t, func() error {
-			return listStacks(true)
+			cfg, err := config.Load()
+			if err != nil {
+				return err
+			}
+			return listStacks(cfg, true)
 		})
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
