@@ -114,10 +114,7 @@ func runClean(names []string, write, yes bool, checkMerged workspace.MergeChecke
 		}
 
 		for i, state := range ew.states {
-			repoColor := ansiRed
-			if state.Status == workspace.StatusClean {
-				repoColor = ansiGreen
-			}
+			repoColor := repoColorFor(state.Status)
 
 			status := state.Status
 			if state.Detail != "" {

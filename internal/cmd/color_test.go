@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/outoforbitdev/muster/internal/workspace"
 )
 
 func withNoColorEnv(t *testing.T, value string) {
@@ -96,6 +98,36 @@ func TestPadColoredWithNoColorEnv(t *testing.T) {
 	want := "abc   "
 	if got != want {
 		t.Errorf("expected NO_COLOR to disable coloring while still padding, got %q", got)
+	}
+}
+
+func TestRepoColorForCleanIsGreen(t *testing.T) {
+	if got := repoColorFor(workspace.StatusClean); got != ansiGreen {
+		t.Errorf("expected clean to color green, got %q", got)
+	}
+}
+
+func TestRepoColorForSkippedIsNeutral(t *testing.T) {
+	if got := repoColorFor(workspace.StatusSkipped); got != "" {
+		t.Errorf("expected skipped (non-git) repos to have no color, got %q", got)
+	}
+}
+
+func TestRepoColorForDirtyIsRed(t *testing.T) {
+	if got := repoColorFor(workspace.StatusDirty); got != ansiRed {
+		t.Errorf("expected dirty to color red, got %q", got)
+	}
+}
+
+func TestRepoColorForUnmergedIsRed(t *testing.T) {
+	if got := repoColorFor(workspace.StatusUnmerged); got != ansiRed {
+		t.Errorf("expected unmerged to color red, got %q", got)
+	}
+}
+
+func TestRepoColorForUnknownIsRed(t *testing.T) {
+	if got := repoColorFor(workspace.StatusUnknown); got != ansiRed {
+		t.Errorf("expected unknown to color red, got %q", got)
 	}
 }
 

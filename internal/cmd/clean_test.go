@@ -264,6 +264,41 @@ func TestRunCleanWrapsLongStateAcrossRowsEvenWithLongWorkspaceAndRepoNames(t *te
 	}
 }
 
+func TestRunCleanSkipsNonGitDirectoryWithoutBlockingSafety(t *testing.T) {
+	withoutNoColorEnv(t)
+	tempDir := withTempHome(t)
+	writeConfig(t, tempDir)
+	root := filepath.Join(tempDir, ".muster", "workspaces")
+
+	initCleanRepo(t, filepath.Join(root, "my-ws", "repo-a"))
+	if err := os.MkdirAll(filepath.Join(root, "my-ws", "broken-clone", "src"), 0o755); err != nil {
+		t.Fatalf("failed to create non-git directory: %v", err)
+	}
+
+	out, err := captureStdout(t, func() error {
+		return runClean(nil, false, false, nil)
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	var skippedLine string
+	for _, line := range strings.Split(out, "\n") {
+		if strings.Contains(line, "not a git repository") {
+			skippedLine = line
+		}
+	}
+	if skippedLine == "" {
+		t.Fatalf("expected output to explain the non-git directory, got %q", out)
+	}
+	if strings.Contains(skippedLine, ansiRed) {
+		t.Errorf("expected the non-git directory's row not to be colored red, got %q", skippedLine)
+	}
+	if !strings.Contains(out, "1 workspace(s) safe to clean") {
+		t.Errorf("expected the workspace to still be safe despite the skipped non-git directory, got %q", out)
+	}
+}
+
 func TestRunCleanWorkspaceWithNoReposIsNotSafe(t *testing.T) {
 	tempDir := withTempHome(t)
 	writeConfig(t, tempDir)

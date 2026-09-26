@@ -12,6 +12,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Fixed
 - `muster launch` now sets upstream tracking (e.g. `origin/main`) on branches it creates, so they no longer start out untracked
+- `muster clean` no longer reports a "failed to check git status" error for repo directories that aren't actually git repositories (e.g. from a broken or incomplete clone); these are now reported as skipped and don't block a workspace from being safe to clean
 
 ---
 

@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"strings"
+
+	"github.com/outoforbitdev/muster/internal/workspace"
 )
 
 const (
@@ -82,6 +84,21 @@ func renderCleanTable(w io.Writer, workspaceWidth, stackWidth, repoWidth int, ro
 			padColored(row.repo, repoWidth, row.repoColor),
 			colorize(row.state, row.repoColor),
 		)
+	}
+}
+
+// repoColorFor maps a repo's status to the color its REPO/STATE cells
+// should render in: green for verified clean, red for anything that blocks
+// cleaning, and no color for a skipped (non-git) directory, since it's
+// neither confirmed safe nor a risk to ignore.
+func repoColorFor(status string) string {
+	switch status {
+	case workspace.StatusClean:
+		return ansiGreen
+	case workspace.StatusSkipped:
+		return ""
+	default:
+		return ansiRed
 	}
 }
 

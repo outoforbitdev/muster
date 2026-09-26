@@ -31,6 +31,48 @@ func runGit(t *testing.T, dir string, args ...string) string {
 	return out
 }
 
+func TestIsGitRepoTrueForRealRepo(t *testing.T) {
+	repoPath := initTestRepo(t, filepath.Join(t.TempDir(), "repo"))
+
+	if !isGitRepo(repoPath) {
+		t.Errorf("expected a real git repo to report isGitRepo=true")
+	}
+}
+
+func TestIsGitRepoFalseForPlainDirectory(t *testing.T) {
+	plainDir := filepath.Join(t.TempDir(), "not-a-repo")
+	if err := os.MkdirAll(plainDir, 0o755); err != nil {
+		t.Fatalf("failed to create plain dir: %v", err)
+	}
+
+	if isGitRepo(plainDir) {
+		t.Errorf("expected a plain, non-git directory to report isGitRepo=false")
+	}
+}
+
+func TestEvaluateRepoSkipsNonGitDirectory(t *testing.T) {
+	plainDir := filepath.Join(t.TempDir(), "not-a-repo")
+	if err := os.MkdirAll(plainDir, 0o755); err != nil {
+		t.Fatalf("failed to create plain dir: %v", err)
+	}
+
+	state := EvaluateRepo(plainDir, "myrepo", nil)
+
+	if state.Status != StatusSkipped {
+		t.Errorf("expected status %q, got %q (detail: %s)", StatusSkipped, state.Status, state.Detail)
+	}
+}
+
+func TestIsWorkspaceSafeIgnoresSkippedRepos(t *testing.T) {
+	states := []RepoState{
+		{Repo: "a", Status: StatusClean},
+		{Repo: "b", Status: StatusSkipped},
+	}
+	if !IsWorkspaceSafe(states) {
+		t.Errorf("expected a skipped (non-git) repo not to block an otherwise-clean workspace")
+	}
+}
+
 func TestIsWorkspaceSafeAllClean(t *testing.T) {
 	states := []RepoState{
 		{Repo: "a", Status: StatusClean},

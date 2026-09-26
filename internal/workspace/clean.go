@@ -2,7 +2,9 @@ package workspace
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -12,6 +14,14 @@ func runGitCommand(dir string, args ...string) (string, error) {
 	cmd := exec.Command("git", append([]string{"-C", dir}, args...)...)
 	out, err := cmd.CombinedOutput()
 	return string(out), err
+}
+
+// isGitRepo reports whether repoPath has a .git entry, i.e. is actually a
+// git repository (as opposed to a plain directory left behind by a failed
+// or incomplete clone).
+func isGitRepo(repoPath string) bool {
+	_, err := os.Stat(filepath.Join(repoPath, ".git"))
+	return err == nil
 }
 
 // isDirty reports whether repoPath has any uncommitted or untracked changes.
@@ -58,6 +68,7 @@ const (
 	StatusClean    = "clean"
 	StatusUnmerged = "unmerged"
 	StatusUnknown  = "unknown"
+	StatusSkipped  = "skipped"
 )
 
 // RepoState describes whether a repo is safe to clean up.
@@ -79,6 +90,10 @@ type MergeChecker func(repoPath, branch string) (bool, error)
 func EvaluateRepo(repoPath, repoName string, checkMerged MergeChecker) RepoState {
 	if checkMerged == nil {
 		checkMerged = checkMergedViaGH
+	}
+
+	if !isGitRepo(repoPath) {
+		return RepoState{Repo: repoName, Status: StatusSkipped, Detail: "not a git repository"}
 	}
 
 	dirty, err := isDirty(repoPath)
@@ -122,10 +137,11 @@ func EvaluateRepo(repoPath, repoName string, checkMerged MergeChecker) RepoState
 }
 
 // IsWorkspaceSafe reports whether every repo in a workspace is safe to
-// clean up: a workspace is only safe if all of its repos are StatusClean.
+// clean up: a workspace is safe if all of its repos are StatusClean, with
+// StatusSkipped (non-git directories) ignored rather than blocking.
 func IsWorkspaceSafe(states []RepoState) bool {
 	for _, state := range states {
-		if state.Status != StatusClean {
+		if state.Status != StatusClean && state.Status != StatusSkipped {
 			return false
 		}
 	}
