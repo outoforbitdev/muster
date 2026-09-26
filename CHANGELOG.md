@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Features
+- `muster clean` command to find and delete workspaces that are safe to remove (no uncommitted changes, and either no divergence from `main`/`master` or divergent commits already merged)
+- `muster list` (or `muster ls`) command to list workspaces or stacks, with `--all` for a table view of stack/repo details
+
+---
+
 ## [0.4.0] - 2026-09-25
 
 ### Changed
