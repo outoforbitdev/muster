@@ -17,9 +17,19 @@ func initTestRepo(t *testing.T, path string) string {
 	}
 
 	runGit(t, path, "init", "-b", "main")
+	configureGitIdentity(t, path)
 	runGit(t, path, "commit", "--allow-empty", "-m", "initial commit")
 
 	return path
+}
+
+// configureGitIdentity sets a local git user.name/user.email in path, so
+// commits work in environments (like CI runners) with no global git
+// identity configured.
+func configureGitIdentity(t *testing.T, path string) {
+	t.Helper()
+	runGit(t, path, "config", "user.email", "test@example.com")
+	runGit(t, path, "config", "user.name", "Test")
 }
 
 func runGit(t *testing.T, dir string, args ...string) string {
@@ -158,6 +168,7 @@ func initRemoteWithClone(t *testing.T) string {
 		t.Fatalf("failed to create seed dir: %v", err)
 	}
 	runGit(t, seedPath, "init", "-b", "main")
+	configureGitIdentity(t, seedPath)
 	runGit(t, seedPath, "commit", "--allow-empty", "-m", "initial commit")
 	runGit(t, seedPath, "remote", "add", "origin", remotePath)
 	runGit(t, seedPath, "push", "origin", "main")
@@ -167,6 +178,7 @@ func initRemoteWithClone(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("failed to clone remote: %v\n%s", err, out)
 	}
+	configureGitIdentity(t, clonePath)
 
 	return clonePath
 }
@@ -195,6 +207,7 @@ func TestDefaultBranchFallsBackToMaster(t *testing.T) {
 		t.Fatalf("failed to create seed dir: %v", err)
 	}
 	runGit(t, seedPath, "init", "-b", "master")
+	configureGitIdentity(t, seedPath)
 	runGit(t, seedPath, "commit", "--allow-empty", "-m", "initial commit")
 	runGit(t, seedPath, "remote", "add", "origin", remotePath)
 	runGit(t, seedPath, "push", "origin", "master")

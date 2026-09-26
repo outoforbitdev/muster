@@ -33,6 +33,7 @@ func initCleanRepo(t *testing.T, path string) string {
 		t.Fatalf("failed to create seed dir: %v", err)
 	}
 	runCleanGit(t, seedPath, "init", "-b", "main")
+	configureGitIdentityForTest(t, seedPath)
 	runCleanGit(t, seedPath, "commit", "--allow-empty", "-m", "initial commit")
 	runCleanGit(t, seedPath, "remote", "add", "origin", remotePath)
 	runCleanGit(t, seedPath, "push", "origin", "main")
@@ -41,8 +42,18 @@ func initCleanRepo(t *testing.T, path string) string {
 		t.Fatalf("failed to create parent dir: %v", err)
 	}
 	runCleanGit(t, "", "clone", remotePath, path)
+	configureGitIdentityForTest(t, path)
 
 	return path
+}
+
+// configureGitIdentityForTest sets a local git user.name/user.email in dir,
+// so commits work in environments (like CI runners) with no global git
+// identity configured.
+func configureGitIdentityForTest(t *testing.T, dir string) {
+	t.Helper()
+	runCleanGit(t, dir, "config", "user.email", "test@example.com")
+	runCleanGit(t, dir, "config", "user.name", "Test")
 }
 
 func runCleanGit(t *testing.T, dir string, args ...string) {
