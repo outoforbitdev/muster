@@ -4,11 +4,21 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/outoforbitdev/muster/internal/workspace"
 )
+
+// ansiEscapePattern matches ANSI color escape sequences (e.g. "\x1b[32m").
+var ansiEscapePattern = regexp.MustCompile("\x1b\\[[0-9;]*m")
+
+// stripANSI removes ANSI color escape sequences, leaving only what's
+// actually visible when the output is rendered in a terminal.
+func stripANSI(s string) string {
+	return ansiEscapePattern.ReplaceAllString(s, "")
+}
 
 // initCleanRepo creates a bare "remote" repo with an initial commit on main
 // and clones it into path, returning path.
@@ -144,6 +154,78 @@ func TestRunCleanFiltersToNamedWorkspaces(t *testing.T) {
 	}
 }
 
+func TestRunCleanColorsSafeWorkspaceGreen(t *testing.T) {
+	withoutNoColorEnv(t)
+	tempDir := withTempHome(t)
+	writeConfig(t, tempDir)
+	root := filepath.Join(tempDir, ".muster", "workspaces")
+
+	initCleanRepo(t, filepath.Join(root, "my-ws", "repo-a"))
+
+	out, err := captureStdout(t, func() error {
+		return runClean(nil, false, false, nil)
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !strings.Contains(out, ansiGreen+"my-ws") {
+		t.Errorf("expected workspace name to be colored green, got %q", out)
+	}
+	if !strings.Contains(out, ansiGreen+"repo-a") {
+		t.Errorf("expected repo name to be colored green, got %q", out)
+	}
+	if strings.Contains(out, ansiRed) {
+		t.Errorf("expected no red in output for an all-clean workspace, got %q", out)
+	}
+}
+
+func TestRunCleanColorsDirtyRepoRed(t *testing.T) {
+	withoutNoColorEnv(t)
+	tempDir := withTempHome(t)
+	writeConfig(t, tempDir)
+	root := filepath.Join(tempDir, ".muster", "workspaces")
+
+	repoPath := initCleanRepo(t, filepath.Join(root, "my-ws", "repo-a"))
+	if err := os.WriteFile(filepath.Join(repoPath, "untracked.txt"), []byte("x"), 0o644); err != nil {
+		t.Fatalf("failed to write untracked file: %v", err)
+	}
+
+	out, err := captureStdout(t, func() error {
+		return runClean(nil, false, false, nil)
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if !strings.Contains(out, ansiRed+"my-ws") {
+		t.Errorf("expected workspace name to be colored red since a repo is dirty, got %q", out)
+	}
+	if !strings.Contains(out, ansiRed+"repo-a") {
+		t.Errorf("expected dirty repo name to be colored red, got %q", out)
+	}
+}
+
+func TestRunCleanRespectsNoColorEnv(t *testing.T) {
+	withNoColorEnv(t, "1")
+	tempDir := withTempHome(t)
+	writeConfig(t, tempDir)
+	root := filepath.Join(tempDir, ".muster", "workspaces")
+
+	initCleanRepo(t, filepath.Join(root, "my-ws", "repo-a"))
+
+	out, err := captureStdout(t, func() error {
+		return runClean(nil, false, false, nil)
+	})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if strings.Contains(out, ansiGreen) || strings.Contains(out, ansiRed) {
+		t.Errorf("expected NO_COLOR to suppress all coloring, got %q", out)
+	}
+}
+
 func TestRunCleanWrapsLongStateAcrossRowsEvenWithLongWorkspaceAndRepoNames(t *testing.T) {
 	tempDir := withTempHome(t)
 	writeConfig(t, tempDir)
@@ -164,18 +246,21 @@ func TestRunCleanWrapsLongStateAcrossRowsEvenWithLongWorkspaceAndRepoNames(t *te
 	}
 
 	lines := strings.Split(strings.TrimRight(out, "\n"), "\n")
+	var longestVisibleLen int
 	var longestLine string
 	for _, line := range lines {
-		if len(line) > len(longestLine) {
+		if visible := len(stripANSI(line)); visible > longestVisibleLen {
+			longestVisibleLen = visible
 			longestLine = line
 		}
 	}
 	// A common terminal width; the full rendered row (all columns, tab
 	// expansion included) must fit within it so the terminal never has to
-	// re-wrap a row itself.
+	// re-wrap a row itself. ANSI color codes are invisible to the terminal,
+	// so they're stripped before measuring.
 	const commonTerminalWidth = 80
-	if len(longestLine) > commonTerminalWidth {
-		t.Errorf("expected rendered row to fit within %d columns, got line of length %d: %q", commonTerminalWidth, len(longestLine), longestLine)
+	if longestVisibleLen > commonTerminalWidth {
+		t.Errorf("expected rendered row to fit within %d visible columns, got %d: %q", commonTerminalWidth, longestVisibleLen, longestLine)
 	}
 }
 

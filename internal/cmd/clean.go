@@ -102,12 +102,23 @@ func runClean(names []string, write, yes bool, checkMerged workspace.MergeChecke
 
 	stateWrapWidth := stateColumnWrapWidth(maxWorkspaceLen, maxStackLen, maxRepoLen)
 
-	var rows [][]string
+	var rows []cleanRow
 	var safeWorkspaces []workspace.Info
 	unsafeCount := 0
 
 	for _, ew := range evaluated {
+		safe := workspace.IsWorkspaceSafe(ew.states)
+		workspaceColor := ansiRed
+		if safe {
+			workspaceColor = ansiGreen
+		}
+
 		for i, state := range ew.states {
+			repoColor := ansiRed
+			if state.Status == workspace.StatusClean {
+				repoColor = ansiGreen
+			}
+
 			status := state.Status
 			if state.Detail != "" {
 				status = status + ", " + state.Detail
@@ -117,23 +128,23 @@ func runClean(names []string, write, yes bool, checkMerged workspace.MergeChecke
 			for j, line := range statusLines {
 				switch {
 				case i == 0 && j == 0:
-					rows = append(rows, []string{ew.ws.Name, ew.ws.Stack, state.Repo, line})
+					rows = append(rows, cleanRow{workspace: ew.ws.Name, stack: ew.ws.Stack, repo: state.Repo, state: line, workspaceColor: workspaceColor, repoColor: repoColor})
 				case j == 0:
-					rows = append(rows, []string{"", "", state.Repo, line})
+					rows = append(rows, cleanRow{repo: state.Repo, state: line, workspaceColor: workspaceColor, repoColor: repoColor})
 				default:
-					rows = append(rows, []string{"", "", "", line})
+					rows = append(rows, cleanRow{state: line, workspaceColor: workspaceColor, repoColor: repoColor})
 				}
 			}
 		}
 
-		if workspace.IsWorkspaceSafe(ew.states) {
+		if safe {
 			safeWorkspaces = append(safeWorkspaces, ew.ws)
 		} else {
 			unsafeCount++
 		}
 	}
 
-	renderTable(os.Stdout, []string{"WORKSPACE", "STACK", "REPO", "STATE"}, rows)
+	renderCleanTable(os.Stdout, maxWorkspaceLen, maxStackLen, maxRepoLen, rows)
 	fmt.Printf("\n%d workspace(s) safe to clean, %d not safe.\n", len(safeWorkspaces), unsafeCount)
 
 	if !write {
