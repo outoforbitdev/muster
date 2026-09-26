@@ -1,6 +1,7 @@
 package workspace
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/outoforbitdev/muster/internal/config"
@@ -73,6 +74,22 @@ func TestShouldCheckoutBranch(t *testing.T) {
 				t.Errorf("expected %v, got %v", tt.expected, result)
 			}
 		})
+	}
+}
+
+func TestCheckoutBranchInRepoSetsUpstreamToDefaultBranch(t *testing.T) {
+	repoPath := initRemoteWithClone(t)
+
+	if err := checkoutBranchInRepo(repoPath, "feature"); err != nil {
+		t.Fatalf("checkoutBranchInRepo failed: %v", err)
+	}
+
+	upstream, err := runGitCommand(repoPath, "rev-parse", "--abbrev-ref", "--symbolic-full-name", "feature@{u}")
+	if err != nil {
+		t.Fatalf("expected new branch to have an upstream configured, got error: %v\n%s", err, upstream)
+	}
+	if got := strings.TrimSpace(upstream); got != "origin/main" {
+		t.Errorf("expected upstream origin/main, got %q", got)
 	}
 }
 

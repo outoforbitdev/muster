@@ -2,8 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Features
+- `muster clean` command to find and delete workspaces that are safe to remove (no uncommitted changes, and either no divergence from `main`/`master` or divergent commits already merged), with output color-coded green/red by safety (respects `NO_COLOR`)
+- `muster list` (or `muster ls`) command to list workspaces or stacks, with `--all` for a table view of stack/repo details
+
+### Fixed
+- `muster launch` now sets upstream tracking (e.g. `origin/main`) on branches it creates, so they no longer start out untracked
+- `muster clean` no longer reports a "failed to check git status" error for repo directories that aren't actually git repositories (e.g. from a broken or incomplete clone); these are now reported as skipped and don't block a workspace from being safe to clean
+
+---
 
 ## [0.4.0] - 2026-09-25
 

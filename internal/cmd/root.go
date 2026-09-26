@@ -12,7 +12,8 @@ var rootCmd = &cobra.Command{
 Use 'muster init' to initialize your configuration.
 Use 'muster launch' to create a new workspace or open an existing one.
 Use 'muster remove' to delete a workspace.
-Use 'muster list' (or 'muster ls') to list workspaces or stacks.`,
+Use 'muster list' (or 'muster ls') to list workspaces or stacks.
+Use 'muster clean' to find and delete workspaces that are safe to remove.`,
 }
 
 func Execute() error {
@@ -24,4 +25,5 @@ func init() {
 	rootCmd.AddCommand(launchCmd)
 	rootCmd.AddCommand(removeCmd)
 	rootCmd.AddCommand(listCmd)
+	rootCmd.AddCommand(cleanCmd)
 }

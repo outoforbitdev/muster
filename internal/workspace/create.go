@@ -154,12 +154,24 @@ func cloneRepo(url, path string) error {
 	return nil
 }
 
-// checkoutBranchInRepo checks out or creates a branch in an existing repository.
-// Uses -b to create the branch if it doesn't exist.
+// checkoutBranchInRepo checks out or creates a branch in an existing
+// repository, then sets its upstream to the repo's default branch (e.g.
+// origin/main) so it isn't left untracked, matching how a manually created
+// feature branch would normally be set up.
 func checkoutBranchInRepo(repoPath, branch string) error {
 	cmd := exec.Command("git", "-C", repoPath, "checkout", "-b", branch)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("git checkout failed: %w", err)
 	}
+
+	base, err := defaultBranch(repoPath)
+	if err != nil {
+		return fmt.Errorf("failed to determine default branch to track: %w", err)
+	}
+
+	if _, err := runGitCommand(repoPath, "branch", "--set-upstream-to="+base, branch); err != nil {
+		return fmt.Errorf("failed to set upstream to %s: %w", base, err)
+	}
+
 	return nil
 }
