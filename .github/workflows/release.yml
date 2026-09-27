@@ -13,7 +13,7 @@ jobs:
   detect:
     permissions:
       contents: write
-    uses: outoforbitdev/reusable-workflows-library/.github/workflows/detect-new-changelog-version.yml@1.3.0
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/detect-new-changelog-version.yml@v1.3.0
 
   build:
     needs: detect
@@ -52,7 +52,7 @@ jobs:
     if: needs.detect.outputs.should-release == 'true'
     permissions:
       contents: write
-    uses: outoforbitdev/reusable-workflows-library/.github/workflows/publish-release.yml@1.3.0
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/publish-release.yml@v1.3.0
     with:
       version: ${{ needs.detect.outputs.new-version }}
       prerelease: ${{ needs.detect.outputs.is-prerelease == 'true' }}
