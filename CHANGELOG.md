@@ -2,15 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## Unreleased
 
 ---
 
-## [0.5.0] - 2026-09-27
+## v0.5.0 - 2026-09-27
 
-### Features
+### Added
 - `muster clean` command to find and delete workspaces that are safe to remove (no uncommitted changes, and either no divergence from `main`/`master` or divergent commits already merged), with output color-coded green/red by safety (respects `NO_COLOR`)
 - `muster list` (or `muster ls`) command to list workspaces or stacks, with `--all` for a table view of stack/repo details
 
@@ -20,7 +21,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
-## [0.4.0] - 2026-09-25
+## v0.4.0 - 2026-09-25
 
 ### Changed
 - `muster launch --stack` now accepts a single stack name instead of multiple repeated flags
@@ -30,14 +31,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
-## [0.3.1] - 2026-07-23
+## v0.3.1 - 2026-07-23
 
 ### Fixed
 - Workspace directory structure: workspaces now created under `~/.muster/workspaces/` instead of directly in `~/.muster/`
 
 ---
 
-## [0.3.0] - 2026-07-22
+## v0.3.0 - 2026-07-22
 
 ### Added
 - `muster init` command to create example configuration file at `~/.config/muster/config.json`
@@ -45,14 +46,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
-## [0.2.1] - 2026-07-21
+## v0.2.1 - 2026-07-21
 
 ### Fixed
 - Release pipeline: ignore dynamically generated `.release-notes.md` file to prevent "git dirty state" error
 
 ---
 
-## [0.2.0] - 2026-07-21
+## v0.2.0 - 2026-07-21
 
 ### Added
 - Project-level instructions (AGENTS.md and CLAUDE.md)
@@ -63,7 +64,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
-## [0.1.0] - 2026-07-21
+## v0.1.0 - 2026-07-21
 
 ### Added
 - Multi-repo workspace orchestration
