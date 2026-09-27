@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+---
+
+## [0.5.0] - 2026-09-27
+
 ### Features
 - `muster clean` command to find and delete workspaces that are safe to remove (no uncommitted changes, and either no divergence from `main`/`master` or divergent commits already merged), with output color-coded green/red by safety (respects `NO_COLOR`)
 - `muster list` (or `muster ls`) command to list workspaces or stacks, with `--all` for a table view of stack/repo details
