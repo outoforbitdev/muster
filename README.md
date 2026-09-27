@@ -200,6 +200,7 @@ backend  api      Backend services API
     - `templateBranchSyntax` (optional): Branch template with `{workspace}` placeholder
     - `description` (optional): Human-readable description
     - `directory` (optional): Custom directory name (default: inferred from URL)
+    - `bootstrapScript` (optional): Shell command run in the repo directory after clone and branch checkout (e.g., `"pre-commit install"`). Supports `{workspace}` and `{workspaceDirectory}` template variables. If it fails, a warning is printed and workspace creation continues.
   - `description` (optional): Stack description (included in generated CLAUDE.md)
 
 - **defaults**: Global settings

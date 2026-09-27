@@ -151,9 +151,9 @@ func TestIsDirtyWithUntrackedFile(t *testing.T) {
 	}
 }
 
-// initRemoteWithClone creates a bare "remote" repo with an initial commit on
-// main, then clones it into a working repo, returning the working repo path.
-func initRemoteWithClone(t *testing.T) string {
+// initBareRemote creates a bare "remote" repo with an initial commit on
+// main, returning the remote's path.
+func initBareRemote(t *testing.T) string {
 	t.Helper()
 
 	remotePath := filepath.Join(t.TempDir(), "remote.git")
@@ -172,6 +172,16 @@ func initRemoteWithClone(t *testing.T) string {
 	runGit(t, seedPath, "commit", "--allow-empty", "-m", "initial commit")
 	runGit(t, seedPath, "remote", "add", "origin", remotePath)
 	runGit(t, seedPath, "push", "origin", "main")
+
+	return remotePath
+}
+
+// initRemoteWithClone creates a bare "remote" repo with an initial commit on
+// main, then clones it into a working repo, returning the working repo path.
+func initRemoteWithClone(t *testing.T) string {
+	t.Helper()
+
+	remotePath := initBareRemote(t)
 
 	clonePath := filepath.Join(t.TempDir(), "clone")
 	out, err := runGitCommand(filepath.Dir(clonePath), "clone", remotePath, clonePath)

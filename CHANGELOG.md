@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## v0.6.0 - 2026-09-27
+
+### Added
+- Optional per-repo `bootstrapScript` config field to run a shell command (e.g. `pre-commit install`) in a repo's directory after clone and branch checkout; supports `{workspace}`/`{workspaceDirectory}` templating and warns without aborting workspace creation if it fails
+
+---
+
 ## v0.5.0 - 2026-09-27
 
 ### Added

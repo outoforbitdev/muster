@@ -1,6 +1,8 @@
 package workspace
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -90,6 +92,83 @@ func TestCheckoutBranchInRepoSetsUpstreamToDefaultBranch(t *testing.T) {
 	}
 	if got := strings.TrimSpace(upstream); got != "origin/main" {
 		t.Errorf("expected upstream origin/main, got %q", got)
+	}
+}
+
+func TestRunBootstrapScriptExecutesCommandInRepoDirectory(t *testing.T) {
+	repoPath := initRemoteWithClone(t)
+
+	if err := runBootstrapScript(repoPath, "touch bootstrap-marker.txt"); err != nil {
+		t.Fatalf("runBootstrapScript returned error: %v", err)
+	}
+
+	if _, err := os.Stat(filepath.Join(repoPath, "bootstrap-marker.txt")); err != nil {
+		t.Errorf("expected bootstrap script to create marker file in repo directory: %v", err)
+	}
+}
+
+func TestRunBootstrapScriptReturnsErrorOnFailure(t *testing.T) {
+	repoPath := initRemoteWithClone(t)
+
+	err := runBootstrapScript(repoPath, "exit 1")
+	if err == nil {
+		t.Fatal("expected error from failing bootstrap script, got nil")
+	}
+}
+
+func TestCreateWorkspaceRunsBootstrapScript(t *testing.T) {
+	remotePath := initBareRemote(t)
+	t.Setenv("HOME", t.TempDir())
+
+	cfg := &config.Config{
+		Stacks: map[string]config.Stack{
+			"test-stack": {
+				Repos: []config.Repo{
+					{
+						URL:             remotePath,
+						Directory:       "repo",
+						BootstrapScript: "touch bootstrap-marker.txt",
+					},
+				},
+			},
+		},
+	}
+
+	if err := CreateWorkspace(cfg, "my-workspace", "test-stack", nil, "", true); err != nil {
+		t.Fatalf("CreateWorkspace returned error: %v", err)
+	}
+
+	markerPath := filepath.Join(WorkspacePath("test-stack", "my-workspace"), "repo", "bootstrap-marker.txt")
+	if _, err := os.Stat(markerPath); err != nil {
+		t.Errorf("expected bootstrap script to run in cloned repo: %v", err)
+	}
+}
+
+func TestCreateWorkspaceWarnsAndContinuesWhenBootstrapScriptFails(t *testing.T) {
+	remotePath := initBareRemote(t)
+	t.Setenv("HOME", t.TempDir())
+
+	cfg := &config.Config{
+		Stacks: map[string]config.Stack{
+			"test-stack": {
+				Repos: []config.Repo{
+					{
+						URL:             remotePath,
+						Directory:       "repo",
+						BootstrapScript: "exit 1",
+					},
+				},
+			},
+		},
+	}
+
+	if err := CreateWorkspace(cfg, "my-workspace", "test-stack", nil, "", true); err != nil {
+		t.Fatalf("expected CreateWorkspace to succeed despite bootstrap script failure, got: %v", err)
+	}
+
+	repoPath := filepath.Join(WorkspacePath("test-stack", "my-workspace"), "repo")
+	if _, err := os.Stat(repoPath); err != nil {
+		t.Errorf("expected repo to still be cloned: %v", err)
 	}
 }
 
