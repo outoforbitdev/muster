@@ -10,14 +10,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
+  detect:
     permissions:
       contents: write
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/detect-new-changelog-version.yml@1.3.0
 
+  build:
+    needs: detect
+    if: needs.detect.outputs.should-release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -26,53 +32,30 @@ jobs:
         with:
           go-version: '1.26.5'
 
-      - name: Extract version and release notes from CHANGELOG
-        id: version
-        run: |
-          VERSION=$(grep -m1 '## \[[0-9]*\.[0-9]*\.[0-9]*' CHANGELOG.md | sed 's/.*\[\([0-9]*\.[0-9]*\.[0-9]*\)\].*/\1/')
-          if [ -z "$VERSION" ]; then
-            echo "Error: Could not extract semantic version from CHANGELOG.md"
-            exit 1
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Extracted version: $VERSION"
-
-          # Extract release notes for this version from CHANGELOG
-          # Captures everything after the version header until the next version or separator
-          awk "/## \[$VERSION\]/,/^(## \[|---)/" CHANGELOG.md | \
-            sed '1d;$d' | \
-            sed '/^$/d' > .release-notes.md
-
-          if [ ! -s .release-notes.md ]; then
-            echo "Warning: No release notes found for version $VERSION"
-            echo "## $VERSION" > .release-notes.md
-          fi
-
-          echo "Release notes:"
-          cat .release-notes.md
-
-      - name: Check if tag already exists
-        id: check-tag
-        run: |
-          if git rev-parse "v${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Create release tag
-        if: steps.check-tag.outputs.exists == 'false'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag "v${{ steps.version.outputs.version }}"
-          git push origin "v${{ steps.version.outputs.version }}"
-
-      - name: Run GoReleaser
-        if: steps.check-tag.outputs.exists == 'false'
+      - name: Run GoReleaser (build only)
         uses: goreleaser/goreleaser-action@v6
         with:
           version: latest
-          args: release --clean --release-notes=.release-notes.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          args: release --clean --skip=publish,announce
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-artifacts
+          path: |
+            dist/*
+            !dist/*.json
+            !dist/*.yaml
+
+  publish:
+    needs: [detect, build]
+    if: needs.detect.outputs.should-release == 'true'
+    permissions:
+      contents: write
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/publish-release.yml@1.3.0
+    with:
+      version: ${{ needs.detect.outputs.new-version }}
+      prerelease: ${{ needs.detect.outputs.is-prerelease == 'true' }}
+      release-notes: ${{ needs.detect.outputs.release-notes }}
+      draft: false
+      artifact-name: release-artifacts
