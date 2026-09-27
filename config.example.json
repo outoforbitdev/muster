@@ -5,7 +5,8 @@
         {
           "url": "https://github.com/outoforbitdev/muster",
           "templateBranchSyntax": "feature-{workspace}",
-          "description": "Workspace orchestration CLI"
+          "description": "Workspace orchestration CLI",
+          "bootstrapScript": "pre-commit install"
         },
         {
           "url": "https://github.com/outoforbitdev/reusable-workflows-library",

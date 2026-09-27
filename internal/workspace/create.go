@@ -45,6 +45,7 @@ func CreateWorkspace(
 				TemplateBranchSyntax: repo.TemplateBranchSyntax,
 				Description:          repo.Description,
 				Directory:            repo.Directory,
+				BootstrapScript:      repo.BootstrapScript,
 			}
 			reposToClone = append(reposToClone, rtc)
 		}
@@ -86,6 +87,15 @@ func CreateWorkspace(
 				}
 			}
 		}
+
+		// Run the bootstrap script if configured.
+		if rtc.BootstrapScript != "" {
+			script := config.SubstituteCommandTemplate(rtc.BootstrapScript, workspace, workspacePath)
+			fmt.Fprintf(os.Stderr, "Running bootstrap script for %s...\n", rtc.URL)
+			if err := runBootstrapScript(repoPath, script); err != nil {
+				fmt.Fprintf(os.Stderr, "warning: bootstrap script failed for repo %d (%s): %v\n", i, rtc.URL, err)
+			}
+		}
 	}
 
 	return nil
@@ -97,6 +107,7 @@ type RepoToClone struct {
 	TemplateBranchSyntax string
 	Description          string
 	Directory            string
+	BootstrapScript      string
 }
 
 // getRepoPath determines where to clone a repo based on its config.
@@ -150,6 +161,18 @@ func cloneRepo(url, path string) error {
 	cmd := exec.Command("git", "clone", url, path)
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("git clone failed: %w", err)
+	}
+	return nil
+}
+
+// runBootstrapScript runs a shell command in the given repo directory.
+func runBootstrapScript(repoPath, script string) error {
+	cmd := exec.Command("sh", "-c", script)
+	cmd.Dir = repoPath
+	cmd.Stdout = os.Stderr
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("bootstrap script failed: %w", err)
 	}
 	return nil
 }

@@ -19,6 +19,7 @@ type Repo struct {
 	TemplateBranchSyntax string `json:"templateBranchSyntax,omitempty"`
 	Description          string `json:"description,omitempty"`
 	Directory            string `json:"directory,omitempty"`
+	BootstrapScript      string `json:"bootstrapScript,omitempty"`
 }
 
 type Stack struct {
