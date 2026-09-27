@@ -49,9 +49,9 @@ jobs:
         with:
           name: release-artifacts
           path: |
-            dist/*
-            !dist/*.json
-            !dist/*.yaml
+            dist/*.tar.gz
+            dist/*.zip
+            dist/SHA256SUMS
 
   publish:
     needs: [detect, build]
