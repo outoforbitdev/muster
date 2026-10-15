@@ -7,17 +7,9 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "02:00"
-      timezone: "UTC"
-    open-pull-requests-limit: 10
-    reviewers:
-      - "jaymirecki"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "02:00"
-      timezone: "UTC"
-    open-pull-requests-limit: 10
-    reviewers:
-      - "jaymirecki"
