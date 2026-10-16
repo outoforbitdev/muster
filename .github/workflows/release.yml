@@ -39,7 +39,7 @@ jobs:
           git push origin "v${VERSION}"
 
       - name: Run GoReleaser (build only)
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7
         with:
           version: latest
           args: release --clean --skip=publish,announce
