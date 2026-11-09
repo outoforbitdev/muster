@@ -12,7 +12,7 @@ jobs:
     permissions:
       contents: write
     # yamllint disable-line rule:line-length
-    uses: outoforbitdev/reusable-workflows-library/.github/workflows/detect-new-changelog-version.yml@26b7e5662b0c0e4488079805bc09b0a22b5cd433 # v1.4.3
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/detect-new-changelog-version.yml@ff80726fa86ef99ecc46185c50667a3d6308ce16 # v1.4.4
 
   build:
     needs: detect
