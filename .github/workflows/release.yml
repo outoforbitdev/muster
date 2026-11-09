@@ -59,7 +59,7 @@ jobs:
     permissions:
       contents: write
     # yamllint disable-line rule:line-length
-    uses: outoforbitdev/reusable-workflows-library/.github/workflows/publish-release.yml@26b7e5662b0c0e4488079805bc09b0a22b5cd433 # v1.4.3
+    uses: outoforbitdev/reusable-workflows-library/.github/workflows/publish-release.yml@ff80726fa86ef99ecc46185c50667a3d6308ce16 # v1.4.4
     with:
       version: ${{ needs.detect.outputs.new-version }}
       prerelease: ${{ needs.detect.outputs.is-prerelease == 'true' }}
