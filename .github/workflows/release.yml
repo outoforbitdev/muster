@@ -39,9 +39,10 @@ jobs:
           git push origin "v${VERSION}"
 
       - name: Run GoReleaser (build only)
-        uses: goreleaser/goreleaser-action@v6
+        # yamllint disable-line rule:line-length
+        uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
         with:
-          version: latest
+          version: v2.20.2
           args: release --clean --skip=publish,announce
 
       - name: Upload build artifacts
